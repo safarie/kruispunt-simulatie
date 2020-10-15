@@ -28,7 +28,7 @@ build/
 libangelscript_addons*.a
 .idea
 cmake-build-*
-/.vs
+.vs/
 tools/l10n/tx/
 tools/l10n/languages/
 tools/l10n/ror\.pot
