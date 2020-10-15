@@ -8,8 +8,8 @@ CPackConfig.cmake
 EnabledFeatures.txt
 CPackSourceConfig.cmake
 CMakeTmp
-build_x86
-build_x64
+x86
+x64
 dependencies/
 bin/RoR
 bin/RoRConfig
@@ -28,7 +28,7 @@ build/
 libangelscript_addons*.a
 .idea
 cmake-build-*
-.vs/
+.vs
 tools/l10n/tx/
 tools/l10n/languages/
 tools/l10n/ror\.pot
