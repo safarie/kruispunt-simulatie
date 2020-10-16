@@ -155,11 +155,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Simulation.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Renderer.hpp" />
     <ClInclude Include="Simulation.hpp" />
     <ClInclude Include="Window.hpp" />
   </ItemGroup>
