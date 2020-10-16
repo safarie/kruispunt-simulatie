@@ -1,5 +1,15 @@
 #include "Window.hpp"
 
+Window* Window::window_ = nullptr;;
+
+Window* Window::GetInstance()
+{
+    if (window_ == nullptr) {
+        window_ = new Window();
+    }
+    return window_;
+}
+
 void Window::initWindow() {
     glfwInit();
 
@@ -9,8 +19,13 @@ void Window::initWindow() {
     window = glfwCreateWindow(WIDTH, HEIGHT, "Traffic Simulation", nullptr, nullptr);
 }
 
-GLFWwindow* Window::getWindow() {
+GLFWwindow* Window::getMemAddres() {
     return window;
+}
+
+struct WindowSpecs Window::getSpecs()
+{
+    return { WIDTH, HEIGHT };
 }
 
 void Window::cleanup() {
