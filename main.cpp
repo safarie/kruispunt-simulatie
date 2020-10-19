@@ -20,8 +20,10 @@ int main()
         glfwPollEvents();
         simulation.Update();
         simulation.LateUpdate();
-        simulation.Draw();
+        renderer.drawFrame();
     }
+
+    vkDeviceWaitIdle(renderer.getDevice());
 
     // 4. cleanup
     renderer.cleanup();
