@@ -1,6 +1,8 @@
 #include "Window.hpp"
+#include "Renderer.hpp"
 
-Window* Window::window_ = nullptr;;
+Window* Window::window_ = nullptr;
+Renderer* renderer = Renderer::GetInstance();
 
 Window* Window::GetInstance()
 {
@@ -14,9 +16,10 @@ void Window::initWindow() {
     glfwInit();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-    window = glfwCreateWindow(WIDTH, HEIGHT, "Traffic Simulation", nullptr, nullptr);
+    window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, renderer->framebufferResizeCallback);
 }
 
 GLFWwindow* Window::getMemAddres() {

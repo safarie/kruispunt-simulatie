@@ -6,13 +6,13 @@ int main()
 {
     Simulation simulation;
     Window* window = Window::GetInstance();
-    Renderer renderer;
+    Renderer* renderer = Renderer::GetInstance();
 
     // 1. initialize window
     window->initWindow();
 
     // 2. initialize vulkan
-    renderer.initvulkan();
+    renderer->initvulkan();
 
     // 3. main loop
     while (!glfwWindowShouldClose(window->getMemAddres()))
@@ -20,12 +20,12 @@ int main()
         glfwPollEvents();
         simulation.Update();
         simulation.LateUpdate();
-        renderer.drawFrame();
+        renderer->drawFrame();
     }
 
-    vkDeviceWaitIdle(renderer.getDevice());
+    vkDeviceWaitIdle(renderer->getDevice());
 
     // 4. cleanup
-    renderer.cleanup();
+    renderer->cleanup();
     window->cleanup();
 }
