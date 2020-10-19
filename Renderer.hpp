@@ -12,6 +12,7 @@
 #include <optional>
 #include <set>
 #include <algorithm>
+#include <fstream>
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -63,6 +64,11 @@ private:
     std::vector<VkImage> swapChainImages;
     VkFormat swapChainImageFormat;
     VkExtent2D swapChainExtent;
+    std::vector<VkImageView> swapChainImageViews;
+    
+    VkRenderPass renderPass;
+    VkPipeline graphicsPipeline;
+    VkPipelineLayout pipelineLayout;
 
     void createInstance();
     void setupDebugMessenger();
@@ -105,4 +111,6 @@ private:
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
+    static std::vector<char> readFile(const std::string& filename);
+    VkShaderModule createShaderModule(const std::vector<char>& code);
 };
