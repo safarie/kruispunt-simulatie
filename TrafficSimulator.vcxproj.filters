@@ -13,14 +13,8 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="shaders">
-      <UniqueIdentifier>{22b3f713-2587-4558-a694-63f10f791021}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="models">
-      <UniqueIdentifier>{ecad6d34-e4f6-49cf-bef7-cc65f6b16491}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="textures">
-      <UniqueIdentifier>{46076f7d-a53f-4197-9543-ee0df17b1b1f}</UniqueIdentifier>
+    <Filter Include="Source Files\shaders">
+      <UniqueIdentifier>{0b142cc3-0c7e-48ff-b366-05118673a5ae}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -47,5 +41,22 @@
     <ClInclude Include="Renderer.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\compile.bat">
+      <Filter>Source Files\shaders</Filter>
+    </None>
+    <None Include="shaders\frag.spv">
+      <Filter>Source Files\shaders</Filter>
+    </None>
+    <None Include="shaders\shader.frag">
+      <Filter>Source Files\shaders</Filter>
+    </None>
+    <None Include="shaders\shader.vert">
+      <Filter>Source Files\shaders</Filter>
+    </None>
+    <None Include="shaders\vert.spv">
+      <Filter>Source Files\shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
