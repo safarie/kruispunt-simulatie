@@ -16,6 +16,9 @@
     <Filter Include="Source Files\shaders">
       <UniqueIdentifier>{0b142cc3-0c7e-48ff-b366-05118673a5ae}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\textures">
+      <UniqueIdentifier>{1562f7e3-f490-4698-9029-647f8cc9f91b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Simulation.cpp">
@@ -58,5 +61,10 @@
     <None Include="shaders\vert.spv">
       <Filter>Source Files\shaders</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="textures\texture.jpg">
+      <Filter>Source Files\textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>
