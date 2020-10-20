@@ -1,16 +1,4 @@
 #include "Window.hpp"
-#include "Renderer.hpp"
-
-Window* Window::window_ = nullptr;
-Renderer* renderer = Renderer::GetInstance();
-
-Window* Window::GetInstance()
-{
-    if (window_ == nullptr) {
-        window_ = new Window();
-    }
-    return window_;
-}
 
 void Window::initWindow() {
     glfwInit();
@@ -19,17 +7,20 @@ void Window::initWindow() {
 
     window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
     glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, renderer->framebufferResizeCallback);
+    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 }
 
-GLFWwindow* Window::getMemAddres() {
+void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height)
+{
+    auto app = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+    app->framebufferResized = true;
+}
+
+GLFWwindow* Window::get() {
     return window;
 }
 
-struct WindowSpecs Window::getSpecs()
-{
-    return { WIDTH, HEIGHT };
-}
+
 
 void Window::cleanup() {
     glfwDestroyWindow(window);

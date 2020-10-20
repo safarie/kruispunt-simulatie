@@ -1,31 +1,35 @@
+#include <memory>
+
 #include "Simulation.hpp"
-#include "Window.hpp"
 #include "Renderer.hpp"
+#include "Window.hpp"
 
 int main()
 {
+    std::shared_ptr<Window> ptr_window(new Window);
+    std::shared_ptr<Renderer> ptr_renderer(new Renderer(ptr_window));
     Simulation simulation;
-    Window* window = Window::GetInstance();
-    Renderer* renderer = Renderer::GetInstance();
 
     // 1. initialize window
-    window->initWindow();
+    ptr_window->initWindow();
 
     // 2. initialize vulkan
-    renderer->initvulkan();
+    ptr_renderer->initvulkan();
 
     // 3. main loop
-    while (!glfwWindowShouldClose(window->getMemAddres()))
+    while (!glfwWindowShouldClose(ptr_window->get()))
     {
         glfwPollEvents();
         simulation.Update();
         simulation.LateUpdate();
-        renderer->drawFrame();
+        ptr_renderer->drawFrame();
     }
 
-    vkDeviceWaitIdle(renderer->getDevice());
+    vkDeviceWaitIdle(ptr_renderer->getDevice());
 
     // 4. cleanup
-    renderer->cleanup();
-    window->cleanup();
+    ptr_renderer->cleanup();
+    ptr_renderer.reset();
+    ptr_window->cleanup();
+    ptr_window.reset();
 }
