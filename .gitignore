@@ -38,6 +38,7 @@ CMakeSettings.json
 doc/
 *.wbproj
 *.vcxproj
+*.vcxproj.*
 traindata/
 web/
 *.cache
