@@ -1,11 +1,6 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 #include <iostream>
-#include <fstream>
-#include <string>
-#include <cstdio>
-#include <cstring>
-#include <filesystem>
 #include <winsock2.h>
 #include <Ws2tcpip.h>
 
