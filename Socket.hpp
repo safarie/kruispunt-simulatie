@@ -13,7 +13,7 @@ public:
 private:
 	WSADATA wsaData;
 	SOCKET client = INVALID_SOCKET;
-	int connection;
+	int connection, recieved;
 	const int port = 54000;
 	const PCSTR host = "127.0.0.1";
 	struct sockaddr_in server;

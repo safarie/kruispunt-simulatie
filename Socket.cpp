@@ -32,7 +32,15 @@ void Socket::Connect()
 		Close();
     }
 
-    char valread = recv(client, buffer, 1023, 0);
+    recieved = recv(client, buffer, 1023, 0);
+
+	if (recieved <= 0) 
+	{
+		std::cout << WSAGetLastError() << std::endl;
+		std::cout << "recv() failed or connection closed prematurely" << std::endl;
+		Close();
+	}
+
     printf("%s\n", buffer);
 }
 
