@@ -13,6 +13,8 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #define GLM_ENABLE_EXPERIMENTAL
 
+#define _USE_MATH_DEFINES
+
 #include <unordered_map>
 #include <iostream>
 #include <fstream>
@@ -27,12 +29,16 @@
 #include <optional>
 #include <set>
 
+#include <random>
+#include <math.h>
+
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
 #else
 const bool enableValidationLayers = true;
 #endif
 
+const int OBJECT_INSTANCES = 100;
 const int MAX_FRAMES_IN_FLIGHT = 2;
 const std::string MODEL_PATH = "models/viking_room.obj";
 const std::string TEXTURE_PATH = "textures/viking_room.png";
@@ -109,7 +115,6 @@ namespace std {
 }
 
 struct UniformBufferObject {
-    alignas(16) glm::mat4 model;
     alignas(16) glm::mat4 view;
     alignas(16) glm::mat4 proj;
 };
@@ -125,7 +130,14 @@ public:
     VkDevice getDevice();
 
 private:
+    glm::vec3 rotations[OBJECT_INSTANCES];
+    glm::vec3 rotationSpeeds[OBJECT_INSTANCES];
+    size_t dynamicAlignment;
     std::shared_ptr<Window> ptr_window;
+    struct DynamicUniformBufferObject
+    {
+        alignas(16) glm::mat4 *model = nullptr;
+    } dubo;
 
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
@@ -169,7 +181,9 @@ private:
     VkDeviceMemory indexBufferMemory;
 
     std::vector<VkBuffer> uniformBuffers;
+    std::vector<VkBuffer> dynamicUniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
+    std::vector<VkDeviceMemory> dynamicUniformBuffersMemory;
 
     VkDescriptorPool descriptorPool;
     std::vector<VkDescriptorSet> descriptorSets;
@@ -232,7 +246,9 @@ private:
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
+    void prepareDanymicUniformBuffer();
     void updateUniformBuffer(uint32_t currentImage);
+    void updateDynamicUniformBuffer(uint32_t currentImage);
 
     void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
     VkCommandBuffer beginSingleTimeCommands();
