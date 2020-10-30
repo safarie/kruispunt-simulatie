@@ -13,6 +13,8 @@ int main()
     Simulation simulation;
     Socket socket;
 
+    bool test = true;
+
     //testing sockets
     socket.Connect();
 
@@ -26,7 +28,8 @@ int main()
     while (!glfwWindowShouldClose(ptr_window->get()))
     {
         glfwPollEvents();
-        socket.Reciving();
+        if (test)
+            test = socket.Reciving();
     //    simulation.Update();
     //    simulation.LateUpdate();
     //    ptr_renderer->drawFrame();

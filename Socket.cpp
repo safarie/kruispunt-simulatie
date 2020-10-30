@@ -31,11 +31,9 @@ void Socket::Connect()
 		std::cout << "Connection Failed" << std::endl;
 		Close();
     }
-
-    
 }
 
-void Socket::Reciving()
+bool Socket::Reciving()
 {
 	recieved = recv(client, buffer, 1023, 0);
 
@@ -43,10 +41,12 @@ void Socket::Reciving()
 	{
 		std::cout << WSAGetLastError() << std::endl;
 		std::cout << "recv() failed or connection closed prematurely" << std::endl;
-		Close();
+		closesocket(client);
+		return false;
 	}
 
     printf("%s\n", buffer);
+	return true;
 }
 
 void Socket::Close()
