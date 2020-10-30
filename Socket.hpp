@@ -8,6 +8,7 @@ class Socket
 {
 public:
 	void Connect();
+	void Reciving();
 	void Close();
 
 private:

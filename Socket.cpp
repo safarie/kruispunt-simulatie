@@ -32,7 +32,12 @@ void Socket::Connect()
 		Close();
     }
 
-    recieved = recv(client, buffer, 1023, 0);
+    
+}
+
+void Socket::Reciving()
+{
+	recieved = recv(client, buffer, 1023, 0);
 
 	if (recieved <= 0) 
 	{

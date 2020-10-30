@@ -23,14 +23,14 @@ int main()
     //ptr_renderer->initvulkan();
 
     //// 3. main loop
-    //while (!glfwWindowShouldClose(ptr_window->get()))
-    //{
-    //    glfwPollEvents();
+    while (!glfwWindowShouldClose(ptr_window->get()))
+    {
+        glfwPollEvents();
+        socket.Reciving();
     //    simulation.Update();
     //    simulation.LateUpdate();
     //    ptr_renderer->drawFrame();
-    //}
-
+    }
     //vkDeviceWaitIdle(ptr_renderer->getDevice());
 
     // 4. cleanup
