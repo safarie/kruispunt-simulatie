@@ -38,7 +38,9 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-const int OBJECT_INSTANCES = 100;
+const int OBJECT_INSTANCES = 10;
+const  size_t dynamicAlignment = 256;
+
 const int MAX_FRAMES_IN_FLIGHT = 2;
 const std::string MODEL_PATH = "models/viking_room.obj";
 const std::string TEXTURE_PATH = "textures/viking_room.png";
@@ -132,11 +134,9 @@ public:
 private:
     glm::vec3 rotations[OBJECT_INSTANCES];
     glm::vec3 rotationSpeeds[OBJECT_INSTANCES];
-    size_t dynamicAlignment;
     std::shared_ptr<Window> ptr_window;
-    struct DynamicUniformBufferObject
-    {
-        alignas(16) glm::mat4 *model = nullptr;
+    struct DynamicUniformBufferObject {
+        alignas(256) glm::mat4* model = nullptr;
     } dubo;
 
     VkInstance instance;

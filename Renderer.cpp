@@ -831,7 +831,7 @@ void Renderer::createCommandBuffers()
 
         for (uint32_t j = 0; j < OBJECT_INSTANCES; j++)
         {
-            uint32_t dynamicOffset = j * static_cast<uint32_t>(dynamicAlignment);
+            uint32_t dynamicOffset = j * dynamicAlignment;
             vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 1, &dynamicOffset);
 
             vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
@@ -1278,12 +1278,6 @@ void Renderer::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize s
 // uniform buffer
 void Renderer::prepareDanymicUniformBuffer()
 {
-    size_t minUboAlignment = 256;
-    dynamicAlignment = sizeof(glm::mat4);
-    if (minUboAlignment > 0) {
-        dynamicAlignment = (dynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
-    }
-
     size_t bufferSize = OBJECT_INSTANCES * dynamicAlignment;
 
     dubo.model = (glm::mat4*)_aligned_malloc(bufferSize, dynamicAlignment);
@@ -1350,15 +1344,15 @@ void Renderer::updateDynamicUniformBuffer(uint32_t currentImage)
     }
 
     void* data;
-    vkMapMemory(device, dynamicUniformBuffersMemory[currentImage], 0, sizeof(OBJECT_INSTANCES * dynamicAlignment), 0, &data);
-    memcpy(data, dubo.model, sizeof(OBJECT_INSTANCES * sizeof(dubo)));
-    //vkUnmapMemory(device, dynamicUniformBuffersMemory[currentImage]);
+    vkMapMemory(device, dynamicUniformBuffersMemory[currentImage], 0, sizeof(dubo.model), 0, &data);
+    memcpy(data, dubo.model, sizeof(dubo.model));
+    vkUnmapMemory(device, dynamicUniformBuffersMemory[currentImage]);
 
-    VkMappedMemoryRange memoryRange = {};
+    /*VkMappedMemoryRange memoryRange = {};
     memoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
     memoryRange.memory = dynamicUniformBuffersMemory[currentImage];
-    memoryRange.size = sizeof(OBJECT_INSTANCES * dynamicAlignment);
-    vkFlushMappedMemoryRanges(device, 1, &memoryRange);
+    memoryRange.size = sizeof(dubo.model);
+    vkFlushMappedMemoryRanges(device, 1, &memoryRange);*/
 }
 
 
