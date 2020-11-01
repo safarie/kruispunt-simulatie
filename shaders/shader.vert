@@ -20,7 +20,7 @@ layout(location = 1) out vec2 fragTexCoord;
 void main() {
     mat4 modelView = ubo.view * dubo.model;
     
-    gl_Position = ubo.proj * modelView * dubo.model * vec4(inPosition.xyz, 1.0);
+    gl_Position = ubo.proj * modelView * vec4(inPosition.xyz, 1.0);
     fragColor = inColor;
     fragTexCoord = inTexCoord;
 }

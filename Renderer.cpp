@@ -23,7 +23,6 @@ void Renderer::initvulkan()
     loadModel();
     createVertexBuffer();
     createIndexBuffer();
-    prepareDanymicUniformBuffer();
     createUniformBuffers();
     createDescriptorPool();
     createDescriptorSets();
@@ -689,6 +688,8 @@ void Renderer::createIndexBuffer()
 
 void Renderer::createUniformBuffers()
 {
+    prepareDanymicUniformBuffer();
+
     VkDeviceSize uniformBufferSize = sizeof(UniformBufferObject);
     VkDeviceSize dynamicUniformBufferSize = OBJECT_INSTANCES * dynamicAlignment;
 
@@ -939,6 +940,9 @@ void Renderer::drawFrame() {
 
 void Renderer::cleanup()
 {
+    if (dubo.model)
+        _aligned_free(dubo.model);
+
     cleanupSwapChain();
 
     vkDestroySampler(device, textureSampler, nullptr);
@@ -1278,6 +1282,14 @@ void Renderer::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize s
 // uniform buffer
 void Renderer::prepareDanymicUniformBuffer()
 {
+    vkGetPhysicalDeviceProperties(physicalDevice, &gpuProperties);
+
+    size_t minUboAlignment = gpuProperties.limits.minUniformBufferOffsetAlignment;
+    dynamicAlignment = sizeof(glm::mat4);
+    if (minUboAlignment > 0) {
+        dynamicAlignment = (dynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
+    }
+
     size_t bufferSize = OBJECT_INSTANCES * dynamicAlignment;
 
     dubo.model = (glm::mat4*)_aligned_malloc(bufferSize, dynamicAlignment);
@@ -1295,7 +1307,7 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
 {
     UniformBufferObject ubo{};
     // ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.view = glm::lookAt(glm::vec3(20.0f, 20.0f, 20.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.view = glm::lookAt(glm::vec3(7.0f, 7.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
     ubo.proj[1][1] *= -1;
 
@@ -1307,17 +1319,19 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
 
 void Renderer::updateDynamicUniformBuffer(uint32_t currentImage) 
 {
-    static auto startTime = std::chrono::high_resolution_clock::now();
-
+    const auto startTime = std::chrono::high_resolution_clock::now();
+   
     auto currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-    if (fmod(time, 1.0f) <= 0.9f) {
+    std::cout << time << std::endl;
+    
+    if (fmod(time, 1.0f) >= 0.01667f) {
         return;
     }
-    
+
     uint32_t dim = static_cast<uint32_t>(pow(OBJECT_INSTANCES, (1.0f / 3.0f)));
-    glm::vec3 offset(5.0f);
+    glm::vec3 offset(2.0f);
 
     for (uint32_t x = 0; x < dim; x++)
     {
@@ -1344,10 +1358,10 @@ void Renderer::updateDynamicUniformBuffer(uint32_t currentImage)
     }
 
     void* data;
-    vkMapMemory(device, dynamicUniformBuffersMemory[currentImage], 0, sizeof(dubo.model), 0, &data);
-    memcpy(data, dubo.model, sizeof(dubo.model));
+    vkMapMemory(device, dynamicUniformBuffersMemory[currentImage], 0, OBJECT_INSTANCES * dynamicAlignment, 0, &data);
+    memcpy(data, dubo.model, OBJECT_INSTANCES * dynamicAlignment);
     vkUnmapMemory(device, dynamicUniformBuffersMemory[currentImage]);
-
+    
     /*VkMappedMemoryRange memoryRange = {};
     memoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
     memoryRange.memory = dynamicUniformBuffersMemory[currentImage];
