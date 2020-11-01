@@ -1307,8 +1307,8 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
 {
     UniformBufferObject ubo{};
     // ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.view = glm::lookAt(glm::vec3(7.0f, 7.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
+    ubo.view = glm::lookAt(glm::vec3(20.0f, 10.0f, 15.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 150.0f);
     ubo.proj[1][1] *= -1;
 
     void* data;
@@ -1319,19 +1319,15 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
 
 void Renderer::updateDynamicUniformBuffer(uint32_t currentImage) 
 {
-    const auto startTime = std::chrono::high_resolution_clock::now();
+    static auto startTime = std::chrono::high_resolution_clock::now();
    
     auto currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-    std::cout << time << std::endl;
-    
-    if (fmod(time, 1.0f) >= 0.01667f) {
-        return;
-    }
+    //std::cout << fmod(time, 1.0f) << std::endl;
 
     uint32_t dim = static_cast<uint32_t>(pow(OBJECT_INSTANCES, (1.0f / 3.0f)));
-    glm::vec3 offset(2.0f);
+    glm::vec3 offset(3.0f);
 
     for (uint32_t x = 0; x < dim; x++)
     {
@@ -1345,7 +1341,7 @@ void Renderer::updateDynamicUniformBuffer(uint32_t currentImage)
                 glm::mat4* modelMat = (glm::mat4*)(((uint64_t)dubo.model + (index * dynamicAlignment)));
 
                 // Update rotations
-                rotations[index] += time * rotationSpeeds[index];
+                rotations[index] += 0.1f * rotationSpeeds[index];
 
                 // Update matrices
                 glm::vec3 pos = glm::vec3(-((dim * offset.x) / 2.0f) + offset.x / 2.0f + x * offset.x, -((dim * offset.y) / 2.0f) + offset.y / 2.0f + y * offset.y, -((dim * offset.z) / 2.0f) + offset.z / 2.0f + z * offset.z);
