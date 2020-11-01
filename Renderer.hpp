@@ -136,7 +136,7 @@ private:
     glm::vec3 rotationSpeeds[OBJECT_INSTANCES];
     std::shared_ptr<Window> ptr_window;
     struct DynamicUniformBufferObject {
-        alignas(256) glm::mat4* model = nullptr;
+        alignas(16) glm::mat4* model = nullptr;
     } dubo;
 
     VkInstance instance;

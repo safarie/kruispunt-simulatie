@@ -341,19 +341,19 @@ void Renderer::createRenderPass()
 
 void Renderer::createDescriptorSetLayout()
 {
-    VkDescriptorSetLayoutBinding duboLayoutBinding{};
-    duboLayoutBinding.binding = 0;
-    duboLayoutBinding.descriptorCount = 1;
-    duboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    duboLayoutBinding.pImmutableSamplers = nullptr;
-    duboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
     VkDescriptorSetLayoutBinding uboLayoutBinding{};
-    uboLayoutBinding.binding = 1;
+    uboLayoutBinding.binding = 0;
     uboLayoutBinding.descriptorCount = 1;
     uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     uboLayoutBinding.pImmutableSamplers = nullptr;
     uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    VkDescriptorSetLayoutBinding duboLayoutBinding{};
+    duboLayoutBinding.binding = 1;
+    duboLayoutBinding.descriptorCount = 1;
+    duboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    duboLayoutBinding.pImmutableSamplers = nullptr;
+    duboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
     samplerLayoutBinding.binding = 2;
@@ -362,7 +362,7 @@ void Renderer::createDescriptorSetLayout()
     samplerLayoutBinding.pImmutableSamplers = nullptr;
     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    std::array<VkDescriptorSetLayoutBinding, 3> bindings = { duboLayoutBinding, uboLayoutBinding, samplerLayoutBinding };
+    std::array<VkDescriptorSetLayoutBinding, 3> bindings = { uboLayoutBinding, duboLayoutBinding, samplerLayoutBinding };
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
@@ -706,9 +706,9 @@ void Renderer::createUniformBuffers()
 void Renderer::createDescriptorPool()
 {
     std::array<VkDescriptorPoolSize, 3> poolSizes{};
-    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChainImages.size());
-    poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChainImages.size());
     poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     poolSizes[2].descriptorCount = static_cast<uint32_t>(swapChainImages.size());
@@ -738,16 +738,16 @@ void Renderer::createDescriptorSets()
         throw std::runtime_error("failed to allocate descriptor sets!");
     }
 
-    for (size_t i = 0; i < swapChainImages.size(); i++) {
-        VkDescriptorBufferInfo dynamicUniformBufferInfo{};
-        dynamicUniformBufferInfo.buffer = dynamicUniformBuffers[i];
-        dynamicUniformBufferInfo.offset = 0;
-        dynamicUniformBufferInfo.range = sizeof(DynamicUniformBufferObject);
-        
+    for (size_t i = 0; i < swapChainImages.size(); i++) {       
         VkDescriptorBufferInfo uniformBufferInfo{};
         uniformBufferInfo.buffer = uniformBuffers[i];
         uniformBufferInfo.offset = 0;
         uniformBufferInfo.range = sizeof(UniformBufferObject);
+
+        VkDescriptorBufferInfo dynamicUniformBufferInfo{};
+        dynamicUniformBufferInfo.buffer = dynamicUniformBuffers[i];
+        dynamicUniformBufferInfo.offset = 0;
+        dynamicUniformBufferInfo.range = sizeof(DynamicUniformBufferObject);
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -759,17 +759,17 @@ void Renderer::createDescriptorSets()
         descriptorWrites[0].dstSet = descriptorSets[i];
         descriptorWrites[0].dstBinding = 0;
         descriptorWrites[0].dstArrayElement = 0;
-        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         descriptorWrites[0].descriptorCount = 1;
-        descriptorWrites[0].pBufferInfo = &dynamicUniformBufferInfo;
+        descriptorWrites[0].pBufferInfo = &uniformBufferInfo;
 
         descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrites[1].dstSet = descriptorSets[i];
         descriptorWrites[1].dstBinding = 1;
         descriptorWrites[1].dstArrayElement = 0;
-        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
         descriptorWrites[1].descriptorCount = 1;
-        descriptorWrites[1].pBufferInfo = &uniformBufferInfo;
+        descriptorWrites[1].pBufferInfo = &dynamicUniformBufferInfo;
 
         descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrites[2].dstSet = descriptorSets[i];
