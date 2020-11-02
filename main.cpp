@@ -18,28 +18,28 @@ int main()
     //testing sockets
     socket.Connect();
 
-    //// 1. initialize window
-    //ptr_window->initWindow();
+    // 1. initialize window
+    ptr_window->initWindow();
 
-    //// 2. initialize vulkan
-    //ptr_renderer->initvulkan();
+    // 2. initialize vulkan
+    ptr_renderer->initvulkan();
 
-    //// 3. main loop
+    // 3. main loop
     while (!glfwWindowShouldClose(ptr_window->get()))
     {
         glfwPollEvents();
         if (test)
             test = socket.Reciving();
-    //    simulation.Update();
-    //    simulation.LateUpdate();
-    //    ptr_renderer->drawFrame();
+        simulation.Update();
+        simulation.LateUpdate();
+        ptr_renderer->drawFrame();
     }
-    //vkDeviceWaitIdle(ptr_renderer->getDevice());
+    vkDeviceWaitIdle(ptr_renderer->getDevice());
 
     // 4. cleanup
     socket.Close();
-    //ptr_renderer->cleanup();
-    //ptr_renderer.reset();
-    //ptr_window->cleanup();
-    //ptr_window.reset();
+    ptr_renderer->cleanup();
+    ptr_renderer.reset();
+    ptr_window->cleanup();
+    ptr_window.reset();
 }
