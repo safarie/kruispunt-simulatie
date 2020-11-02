@@ -31,6 +31,7 @@
 
 #include <random>
 #include <math.h>
+#include <cmath>
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -38,7 +39,7 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-const int OBJECT_INSTANCES = 1000;
+const int OBJECT_INSTANCES = 10;
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 const std::string MODEL_PATH = "models/Car.obj";
@@ -251,6 +252,8 @@ private:
     void prepareDanymicUniformBuffer();
     void updateUniformBuffer(uint32_t currentImage);
     void updateDynamicUniformBuffer(uint32_t currentImage);
+    void spawnModels();
+    glm::vec3 getDirectionVector(float degrees, float radius);
 
     void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
     VkCommandBuffer beginSingleTimeCommands();
