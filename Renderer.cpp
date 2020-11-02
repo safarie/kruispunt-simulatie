@@ -238,7 +238,9 @@ void Renderer::cleanupSwapChain() {
 
     for (size_t i = 0; i < swapChainImages.size(); i++) {
         vkDestroyBuffer(device, uniformBuffers[i], nullptr);
+        vkDestroyBuffer(device, dynamicUniformBuffers[i], nullptr);
         vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
+        vkFreeMemory(device, dynamicUniformBuffersMemory[i], nullptr);
     }
 
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);
@@ -345,14 +347,21 @@ void Renderer::createDescriptorSetLayout()
     uboLayoutBinding.pImmutableSamplers = nullptr;
     uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
+    VkDescriptorSetLayoutBinding duboLayoutBinding{};
+    duboLayoutBinding.binding = 1;
+    duboLayoutBinding.descriptorCount = 1;
+    duboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    duboLayoutBinding.pImmutableSamplers = nullptr;
+    duboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-    samplerLayoutBinding.binding = 1;
+    samplerLayoutBinding.binding = 2;
     samplerLayoutBinding.descriptorCount = 1;
     samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     samplerLayoutBinding.pImmutableSamplers = nullptr;
     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
+    std::array<VkDescriptorSetLayoutBinding, 3> bindings = { uboLayoutBinding, duboLayoutBinding, samplerLayoutBinding };
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
@@ -679,23 +688,31 @@ void Renderer::createIndexBuffer()
 
 void Renderer::createUniformBuffers()
 {
-    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+    prepareDanymicUniformBuffer();
+
+    VkDeviceSize uniformBufferSize = sizeof(UniformBufferObject);
+    VkDeviceSize dynamicUniformBufferSize = OBJECT_INSTANCES * dynamicAlignment;
 
     uniformBuffers.resize(swapChainImages.size());
+    dynamicUniformBuffers.resize(swapChainImages.size());
     uniformBuffersMemory.resize(swapChainImages.size());
+    dynamicUniformBuffersMemory.resize(swapChainImages.size());
 
     for (size_t i = 0; i < swapChainImages.size(); i++) {
-        createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
+        createBuffer(uniformBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
+        createBuffer(dynamicUniformBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, dynamicUniformBuffers[i], dynamicUniformBuffersMemory[i]);
     }
 }
 
 void Renderer::createDescriptorPool()
 {
-    std::array<VkDescriptorPoolSize, 2> poolSizes{};
+    std::array<VkDescriptorPoolSize, 3> poolSizes{};
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChainImages.size());
-    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChainImages.size());
+    poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSizes[2].descriptorCount = static_cast<uint32_t>(swapChainImages.size());
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -722,34 +739,46 @@ void Renderer::createDescriptorSets()
         throw std::runtime_error("failed to allocate descriptor sets!");
     }
 
-    for (size_t i = 0; i < swapChainImages.size(); i++) {
-        VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = uniformBuffers[i];
-        bufferInfo.offset = 0;
-        bufferInfo.range = sizeof(UniformBufferObject);
+    for (size_t i = 0; i < swapChainImages.size(); i++) {       
+        VkDescriptorBufferInfo uniformBufferInfo{};
+        uniformBufferInfo.buffer = uniformBuffers[i];
+        uniformBufferInfo.offset = 0;
+        uniformBufferInfo.range = sizeof(UniformBufferObject);
+
+        VkDescriptorBufferInfo dynamicUniformBufferInfo{};
+        dynamicUniformBufferInfo.buffer = dynamicUniformBuffers[i];
+        dynamicUniformBufferInfo.offset = 0;
+        dynamicUniformBufferInfo.range = sizeof(DynamicUniformBufferObject);
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         imageInfo.imageView = textureImageView;
         imageInfo.sampler = textureSampler;
 
-        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-
+        std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
         descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrites[0].dstSet = descriptorSets[i];
         descriptorWrites[0].dstBinding = 0;
         descriptorWrites[0].dstArrayElement = 0;
         descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         descriptorWrites[0].descriptorCount = 1;
-        descriptorWrites[0].pBufferInfo = &bufferInfo;
+        descriptorWrites[0].pBufferInfo = &uniformBufferInfo;
 
         descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrites[1].dstSet = descriptorSets[i];
         descriptorWrites[1].dstBinding = 1;
         descriptorWrites[1].dstArrayElement = 0;
-        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
         descriptorWrites[1].descriptorCount = 1;
-        descriptorWrites[1].pImageInfo = &imageInfo;
+        descriptorWrites[1].pBufferInfo = &dynamicUniformBufferInfo;
+
+        descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[2].dstSet = descriptorSets[i];
+        descriptorWrites[2].dstBinding = 2;
+        descriptorWrites[2].dstArrayElement = 0;
+        descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptorWrites[2].descriptorCount = 1;
+        descriptorWrites[2].pImageInfo = &imageInfo;
 
         vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     }
@@ -801,9 +830,13 @@ void Renderer::createCommandBuffers()
 
         vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-        vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
+        for (uint32_t j = 0; j < OBJECT_INSTANCES; j++)
+        {
+            uint32_t dynamicOffset = j * dynamicAlignment;
+            vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 1, &dynamicOffset);
 
-        vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+            vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+        }
 
         vkCmdEndRenderPass(commandBuffers[i]);
 
@@ -851,6 +884,7 @@ void Renderer::drawFrame() {
     }
 
     updateUniformBuffer(imageIndex);
+    updateDynamicUniformBuffer(imageIndex);
 
     if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
         vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
@@ -906,6 +940,9 @@ void Renderer::drawFrame() {
 
 void Renderer::cleanup()
 {
+    if (dubo.model)
+        _aligned_free(dubo.model);
+
     cleanupSwapChain();
 
     vkDestroySampler(device, textureSampler, nullptr);
@@ -1243,22 +1280,89 @@ void Renderer::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize s
 
 
 // uniform buffer
-void Renderer::updateUniformBuffer(uint32_t currentImage) {
-    static auto startTime = std::chrono::high_resolution_clock::now();
+void Renderer::prepareDanymicUniformBuffer()
+{
+    vkGetPhysicalDeviceProperties(physicalDevice, &gpuProperties);
 
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    size_t minUboAlignment = gpuProperties.limits.minUniformBufferOffsetAlignment;
+    dynamicAlignment = sizeof(glm::mat4);
+    if (minUboAlignment > 0) {
+        dynamicAlignment = (dynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
+    }
 
+    size_t bufferSize = OBJECT_INSTANCES * dynamicAlignment;
+
+    dubo.model = (glm::mat4*)_aligned_malloc(bufferSize, dynamicAlignment);
+    assert(dubo.model);
+
+    std::default_random_engine rndEngine;
+    std::normal_distribution<float> rndDist(-1.0f, 1.0f);
+    for (uint32_t i = 0; i < OBJECT_INSTANCES; i++) {
+        rotations[i] = glm::vec3(rndDist(rndEngine), rndDist(rndEngine), rndDist(rndEngine)) * 2.0f * (float)M_PI;
+        rotationSpeeds[i] = glm::vec3(rndDist(rndEngine), rndDist(rndEngine), rndDist(rndEngine));
+    }
+}
+
+void Renderer::updateUniformBuffer(uint32_t currentImage) 
+{
     UniformBufferObject ubo{};
-    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
+    // ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.view = glm::lookAt(glm::vec3(40.0f, 40.0f, 15.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 150.0f);
     ubo.proj[1][1] *= -1;
 
     void* data;
     vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
     memcpy(data, &ubo, sizeof(ubo));
     vkUnmapMemory(device, uniformBuffersMemory[currentImage]);
+}
+
+void Renderer::updateDynamicUniformBuffer(uint32_t currentImage) 
+{
+    static auto startTime = std::chrono::high_resolution_clock::now();
+   
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+    //std::cout << fmod(time, 1.0f) << std::endl;
+
+    uint32_t dim = static_cast<uint32_t>(pow(OBJECT_INSTANCES, (1.0f / 3.0f)));
+    glm::vec3 offset(5.0f);
+
+    for (uint32_t x = 0; x < dim; x++)
+    {
+        for (uint32_t y = 0; y < dim; y++)
+        {
+            for (uint32_t z = 0; z < dim; z++)
+            {
+                uint32_t index = x * dim * dim + y * dim + z;
+
+                // Aligned offset
+                glm::mat4* modelMat = (glm::mat4*)(((uint64_t)dubo.model + (index * dynamicAlignment)));
+
+                // Update rotations
+                rotations[index] += 0.1f * rotationSpeeds[index];
+
+                // Update matrices
+                glm::vec3 pos = glm::vec3(-((dim * offset.x) / 2.0f) + offset.x / 2.0f + x * offset.x, -((dim * offset.y) / 2.0f) + offset.y / 2.0f + y * offset.y, -((dim * offset.z) / 2.0f) + offset.z / 2.0f + z * offset.z);
+                *modelMat = glm::translate(glm::mat4(1.0f), pos);
+                *modelMat = glm::rotate(*modelMat, rotations[index].x, glm::vec3(1.0f, 0.0f, 0.0f));
+                *modelMat = glm::rotate(*modelMat, rotations[index].y, glm::vec3(0.0f, 1.0f, 0.0f));
+                *modelMat = glm::rotate(*modelMat, rotations[index].z, glm::vec3(0.0f, 0.0f, 1.0f));
+            }
+        }
+    }
+
+    void* data;
+    vkMapMemory(device, dynamicUniformBuffersMemory[currentImage], 0, OBJECT_INSTANCES * dynamicAlignment, 0, &data);
+    memcpy(data, dubo.model, OBJECT_INSTANCES * dynamicAlignment);
+    vkUnmapMemory(device, dynamicUniformBuffersMemory[currentImage]);
+    
+    /*VkMappedMemoryRange memoryRange = {};
+    memoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+    memoryRange.memory = dynamicUniformBuffersMemory[currentImage];
+    memoryRange.size = sizeof(dubo.model);
+    vkFlushMappedMemoryRanges(device, 1, &memoryRange);*/
 }
 
 
