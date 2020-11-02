@@ -38,11 +38,11 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-const int OBJECT_INSTANCES = 125;
+const int OBJECT_INSTANCES = 1000;
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
-const std::string MODEL_PATH = "models/viking_room.obj";
-const std::string TEXTURE_PATH = "textures/viking_room.png";
+const std::string MODEL_PATH = "models/Car.obj";
+const std::string TEXTURE_PATH = "textures/Car.png";
 
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
