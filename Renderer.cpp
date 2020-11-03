@@ -869,7 +869,7 @@ void Renderer::createSyncObjects()
     }
 }
 
-void Renderer::drawFrame() {
+void Renderer::drawFrame(float &delta) {
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
@@ -883,8 +883,8 @@ void Renderer::drawFrame() {
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
-    updateUniformBuffer(imageIndex);
-    updateDynamicUniformBuffer(imageIndex);
+    updateUniformBuffer(imageIndex);    
+    updateDynamicUniformBuffer(imageIndex, delta);
 
     if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
         vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
@@ -1295,21 +1295,13 @@ void Renderer::prepareDanymicUniformBuffer()
     dubo.model = (glm::mat4*)_aligned_malloc(bufferSize, dynamicAlignment);
     assert(dubo.model);
 
-    /*std::default_random_engine rndEngine;
-    std::normal_distribution<float> rndDist(-1.0f, 1.0f);
-    for (uint32_t i = 0; i < OBJECT_INSTANCES; i++) {
-        rotations[i] = glm::vec3(rndDist(rndEngine), rndDist(rndEngine), rndDist(rndEngine)) * 2.0f * (float)M_PI;
-        rotationSpeeds[i] = glm::vec3(rndDist(rndEngine), rndDist(rndEngine), rndDist(rndEngine));
-    }*/
-
     spawnModels();
 }
 
 void Renderer::updateUniformBuffer(uint32_t currentImage) 
 {
     UniformBufferObject ubo{};
-    // ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.view = glm::lookAt(glm::vec3(20.0f, 20.0f, 20.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.view = glm::lookAt(glm::vec3(30.0f, 30.0f, 45.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 150.0f);
     ubo.proj[1][1] *= -1;
 
@@ -1319,55 +1311,28 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
     vkUnmapMemory(device, uniformBuffersMemory[currentImage]);
 }
 
-void Renderer::updateDynamicUniformBuffer(uint32_t currentImage) 
+void Renderer::updateDynamicUniformBuffer(uint32_t currentImage, float &delta) 
 {
-    static auto startTime = std::chrono::high_resolution_clock::now();
-   
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-    float speed = 5.0f;
-
-    //std::cout << fmod(time, 1.0f) << std::endl;
-
-    //uint32_t dim = static_cast<uint32_t>(pow(OBJECT_INSTANCES, (1.0f / 3.0f)));
-    //glm::vec3 offset(5.0f);
-
-    //for (uint32_t x = 0; x < dim; x++)
-    //{
-    //    for (uint32_t y = 0; y < dim; y++)
-    //    {
-    //        for (uint32_t z = 0; z < dim; z++)
-    //        {
-    //            uint32_t index = x * dim * dim + y * dim + z;
-
-    //            // Aligned offset
-    //            glm::mat4* modelMat = (glm::mat4*)(((uint64_t)dubo.model + (index * dynamicAlignment)));
-
-    //            // Update rotations
-    //            rotations[index] += 0.1f * rotationSpeeds[index];
-
-    //            // Update matrices
-    //            glm::vec3 pos = glm::vec3(-((dim * offset.x) / 2.0f) + offset.x / 2.0f + x * offset.x, -((dim * offset.y) / 2.0f) + offset.y / 2.0f + y * offset.y, -((dim * offset.z) / 2.0f) + offset.z / 2.0f + z * offset.z);
-    //            *modelMat = glm::translate(glm::mat4(1.0f), pos);
-    //            *modelMat = glm::rotate(*modelMat, rotations[index].x, glm::vec3(1.0f, 0.0f, 0.0f));
-    //            *modelMat = glm::rotate(*modelMat, rotations[index].y, glm::vec3(0.0f, 1.0f, 0.0f));
-    //            *modelMat = glm::rotate(*modelMat, rotations[index].z, glm::vec3(0.0f, 0.0f, 1.0f));
-    //        }
-    //    }
-    //}
-
-    // glm::radians(degrees) --> rotates counter clock wise (prob because of the inverted y axes)
+    float degreesPerSecond = 60.0f;
+    const float speed = 50.0f;    // m/s
+    const float rad = 180 / 3.1415;
 
     for (size_t i = 0; i < OBJECT_INSTANCES; i++)
     {
         glm::mat4* modelMat = (glm::mat4*)(((uint64_t)dubo.model + (i * dynamicAlignment)));
-        float degrees = fmod(time * 50, 360.0f);
 
-        *modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));                   // start pos
-        *modelMat = glm::translate(*modelMat, getDirectionVector(degrees, i * 3.0f));                         // direction to move in
-        *modelMat = glm::rotate(*modelMat, glm::radians(degrees), glm::vec3(0.0f, 0.0f, 1.0f));     // rotate to face correct direction
-        *modelMat = glm::rotate(*modelMat, glm::radians(270.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        float radius = i * 3.0f + 9.0f;    // car, spacing, offset
+        float angle = std::tan(speed / radius) * rad;
+        float degrees = fmod(angle, 360.0f); //fabs
+        
+        std::cout << degrees << std::endl;
+
+        // working turning X degrees per second
+        *modelMat = glm::translate(*modelMat, delta * speed * glm::vec3(-1.0, 0.0f, 0.0f));
+        *modelMat = glm::rotate(*modelMat, delta * glm::radians(degrees), glm::vec3(0.0f, 0.0f, 1.0f));
+
+        // working straight line
+        //* modelMat = glm::translate(*modelMat, delta * speed * glm::vec3(-1.0f, 0.0f, 0.0f));
     }
 
     void* data;
@@ -1377,38 +1342,21 @@ void Renderer::updateDynamicUniformBuffer(uint32_t currentImage)
 }
 
 void Renderer::spawnModels() {
+    // initial location off all vehicles (under the map)
     for (size_t i = 0; i < OBJECT_INSTANCES; i++)
     {
         glm::mat4* modelMat = (glm::mat4*)(((uint64_t)dubo.model + (i * dynamicAlignment)));
 
-        *modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -10.0f));
+        *modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, i * 3.0f, 0.0f));
     }
+
+    // note: when "spawning" the vehicles --> set spawn location and rotate vehicle in the correct direction!
 };
 
 glm::vec3 Renderer::getDirectionVector(float degrees, float radius) {
     float x, y;
-
-    x = std::cos(glm::radians(degrees)) * radius;
-    y = std::sin(glm::radians(degrees)) * radius;
-
-    /*if (degrees <= 90) {
-        y = -s / 90.0f * degrees;
-        x = -s - y;
-    }
-    else if (degrees <= 180) {
-        x = s / 90.0f * (degrees - 90.0f);
-        y = -s + x;
-    }
-    else if (degrees <= 270) {
-        y = s / 90.0f * (degrees - 180.0f);
-        x = s - y;
-    }
-    else {
-        x = -s / 90.0f * (degrees - 270.0f);
-        y = s + x;
-    }*/
-
-    //std::cout << "x: " << x << ", y: " << y << ", degrees: " << degrees << std::endl;
+    x = std::sin(glm::radians(degrees)) * radius;
+    y = std::cos(glm::radians(degrees)) * radius;
 
     return glm::vec3(x, y, 0.0f);
 };

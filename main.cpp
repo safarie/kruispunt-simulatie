@@ -14,6 +14,7 @@ int main()
     Socket socket;
 
     bool test = true;
+    float previousTime = 0.0f;
 
     //testing sockets
     socket.Connect();
@@ -27,12 +28,19 @@ int main()
     // 3. main loop
     while (!glfwWindowShouldClose(ptr_window->get()))
     {
+        static auto startTime = std::chrono::high_resolution_clock::now();
+
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+        float delta = time - previousTime;
+        previousTime = time;
+
         glfwPollEvents();
         if (test)
             test = socket.Reciving();
         simulation.Update();
         simulation.LateUpdate();
-        ptr_renderer->drawFrame();
+        ptr_renderer->drawFrame(delta);
     }
     vkDeviceWaitIdle(ptr_renderer->getDevice());
 

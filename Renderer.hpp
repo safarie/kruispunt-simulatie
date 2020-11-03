@@ -32,6 +32,7 @@
 #include <random>
 #include <math.h>
 #include <cmath>
+#include "Vehicle.hpp"
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -128,7 +129,7 @@ public:
 
     void initvulkan();
     void cleanup();
-    void drawFrame();
+    void drawFrame(float &delta);
     VkDevice getDevice();
 
 private:
@@ -251,7 +252,7 @@ private:
 
     void prepareDanymicUniformBuffer();
     void updateUniformBuffer(uint32_t currentImage);
-    void updateDynamicUniformBuffer(uint32_t currentImage);
+    void updateDynamicUniformBuffer(uint32_t currentImage, float &delta);
     void spawnModels();
     glm::vec3 getDirectionVector(float degrees, float radius);
 
