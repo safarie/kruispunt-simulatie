@@ -16,8 +16,8 @@ public:
 	Route(int ID) {
 		routeID = ID;
 
-		// !! if you change size here, change OBJECT_INSTANCES in Renderer.hpp (ln 42)
-		for (size_t i = 0; i < 5; i++)
+		// !! if you change size here, change OBJECT_INSTANCES in Renderer.hpp (ln 43)
+		for (size_t i = 0; i < 1; i++)
 		{
 			addRoadUser(new Vehicle(i));
 		}
@@ -36,6 +36,6 @@ public:
 
 private:
 	int routeID;					// route id
-	const float speed = 20.0f;      // meters per second
-	const float distance = 15.0f;	// distance in meters
+	const float speed = 14.0f;      // meters per second
+	const float distance = 30.0f;	// distance in meters
 };

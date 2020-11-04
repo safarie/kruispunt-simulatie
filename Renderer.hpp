@@ -40,7 +40,7 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-const int OBJECT_INSTANCES = 5;
+const int OBJECT_INSTANCES = 1; // !! if you change size here, change i (in the for loop) in Route.hpp (ln 19)
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 const std::string MODEL_PATH = "models/Car.obj";
@@ -129,7 +129,7 @@ public:
 
     void initvulkan();
     void cleanup();
-    void drawFrame(float &delta);
+    void drawFrame();
     VkDevice getDevice();
 
 private:
@@ -254,7 +254,7 @@ private:
 
     void prepareDanymicUniformBuffer();
     void updateUniformBuffer(uint32_t currentImage);
-    void updateDynamicUniformBuffer(uint32_t currentImage, float &delta);
+    void updateDynamicUniformBuffer(uint32_t currentImage);
     void spawnModels();
 
     void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);

@@ -13,7 +13,7 @@ int main()
     std::shared_ptr<Renderer> ptr_renderer(new Renderer(ptr_window, ptr_simulation));
     Socket socket;
 
-    bool test = true;
+    bool connected = true;
     float previousTime = 0.0f;
 
     //testing sockets
@@ -39,11 +39,11 @@ int main()
         previousTime = time;
 
         glfwPollEvents();
-        if (test)
-            test = socket.Reciving();
+        if (connected)
+            connected = socket.Reciving();
         ptr_simulation->Update(delta);
         ptr_simulation->LateUpdate(delta);
-        ptr_renderer->drawFrame(delta);
+        ptr_renderer->drawFrame();
     }
     vkDeviceWaitIdle(ptr_renderer->getDevice());
 

@@ -38,7 +38,7 @@ void Renderer::createInstance()
 
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Hello Triangle";
+    appInfo.pApplicationName = "Traffic Junction";
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "No Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -869,7 +869,7 @@ void Renderer::createSyncObjects()
     }
 }
 
-void Renderer::drawFrame(float &delta) {
+void Renderer::drawFrame() {
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
@@ -884,7 +884,7 @@ void Renderer::drawFrame(float &delta) {
     }
 
     updateUniformBuffer(imageIndex);    
-    updateDynamicUniformBuffer(imageIndex, delta);
+    updateDynamicUniformBuffer(imageIndex);
 
     if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
         vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
@@ -1302,8 +1302,8 @@ void Renderer::prepareDanymicUniformBuffer()
 void Renderer::updateUniformBuffer(uint32_t currentImage) 
 {
     UniformBufferObject ubo{};
-    ubo.view = glm::lookAt(glm::vec3(100.0f, 0.0f, 90.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 200.0f);
+    ubo.view = glm::lookAt(glm::vec3(15.0f, 0.0f, 90.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
     ubo.proj[1][1] *= -1;
 
     void* data;
@@ -1312,7 +1312,7 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
     vkUnmapMemory(device, uniformBuffersMemory[currentImage]);
 }
 
-void Renderer::updateDynamicUniformBuffer(uint32_t currentImage, float &delta) 
+void Renderer::updateDynamicUniformBuffer(uint32_t currentImage) 
 {
     for (Route &route : ptr_simulation->routes)
     {
