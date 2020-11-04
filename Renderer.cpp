@@ -1301,8 +1301,8 @@ void Renderer::prepareDanymicUniformBuffer()
 void Renderer::updateUniformBuffer(uint32_t currentImage) 
 {
     UniformBufferObject ubo{};
-    ubo.view = glm::lookAt(glm::vec3(30.0f, 30.0f, 45.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 150.0f);
+    ubo.view = glm::lookAt(glm::vec3(100.0f, 0.0f, 90.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 200.0f);
     ubo.proj[1][1] *= -1;
 
     void* data;
@@ -1313,26 +1313,30 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
 
 void Renderer::updateDynamicUniformBuffer(uint32_t currentImage, float &delta) 
 {
-    float degreesPerSecond = 60.0f;
-    const float speed = 50.0f;    // m/s
-    const float rad = 180 / 3.1415;
+    const float speed = 20.0f;    // m/s
+    const float distance = 15.0f;
 
     for (size_t i = 0; i < OBJECT_INSTANCES; i++)
     {
         glm::mat4* modelMat = (glm::mat4*)(((uint64_t)dubo.model + (i * dynamicAlignment)));
+        cars[i] += delta;
 
-        float radius = i * 3.0f + 9.0f;    // car, spacing, offset
-        float angle = std::tan(speed / radius) * rad;
-        float degrees = fmod(angle, 360.0f); //fabs
-        
-        std::cout << degrees << std::endl;
+        float radius = (i * 3.0f) + 9.0f;    // car, spacing, offset
+        float circumference = (radius * 2) * M_PI;
+        float degPerMeter = 360.0f / circumference;
+        float angle = speed * degPerMeter;
 
-        // working turning X degrees per second
-        *modelMat = glm::translate(*modelMat, delta * speed * glm::vec3(-1.0, 0.0f, 0.0f));
-        *modelMat = glm::rotate(*modelMat, delta * glm::radians(degrees), glm::vec3(0.0f, 0.0f, 1.0f));
+        //std::cout << time * angle << std::endl;
 
-        // working straight line
-        //* modelMat = glm::translate(*modelMat, delta * speed * glm::vec3(-1.0f, 0.0f, 0.0f));
+        if (cars[i] * speed < distance) {
+            *modelMat = glm::translate(*modelMat, delta * speed * glm::vec3(-1.0f, 0.0f, 0.0f));
+            continue;
+        } else if (cars[i] * speed > distance && (cars[i] - (distance / speed)) * angle <= 90.0f) {
+            *modelMat = glm::translate(*modelMat, delta * speed * glm::vec3(-1.0, 0.0f, 0.0f));
+            *modelMat = glm::rotate(*modelMat, delta * glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+        } else {
+            cars[i] = 0.0f;
+        }
     }
 
     void* data;
@@ -1347,18 +1351,10 @@ void Renderer::spawnModels() {
     {
         glm::mat4* modelMat = (glm::mat4*)(((uint64_t)dubo.model + (i * dynamicAlignment)));
 
-        *modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, i * 3.0f, 0.0f));
+        *modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, i * 3.0f + 9.0f, 0.0f));
     }
 
     // note: when "spawning" the vehicles --> set spawn location and rotate vehicle in the correct direction!
-};
-
-glm::vec3 Renderer::getDirectionVector(float degrees, float radius) {
-    float x, y;
-    x = std::sin(glm::radians(degrees)) * radius;
-    y = std::cos(glm::radians(degrees)) * radius;
-
-    return glm::vec3(x, y, 0.0f);
 };
 
 

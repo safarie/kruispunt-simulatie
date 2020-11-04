@@ -31,7 +31,7 @@
 
 #include <random>
 #include <math.h>
-#include <cmath>
+//#include <cmath>
 #include "Vehicle.hpp"
 
 #ifdef NDEBUG
@@ -40,7 +40,7 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-const int OBJECT_INSTANCES = 10;
+const int OBJECT_INSTANCES = 20;
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 const std::string MODEL_PATH = "models/Car.obj";
@@ -137,6 +137,7 @@ private:
     glm::vec3 rotationSpeeds[OBJECT_INSTANCES];
     std::shared_ptr<Window> ptr_window;
     size_t dynamicAlignment;
+    float cars[OBJECT_INSTANCES] = {};
 
     struct DynamicUniformBufferObject {
         alignas(16) glm::mat4* model = nullptr;
@@ -254,7 +255,6 @@ private:
     void updateUniformBuffer(uint32_t currentImage);
     void updateDynamicUniformBuffer(uint32_t currentImage, float &delta);
     void spawnModels();
-    glm::vec3 getDirectionVector(float degrees, float radius);
 
     void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
     VkCommandBuffer beginSingleTimeCommands();
