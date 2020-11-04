@@ -1,7 +1,17 @@
 #include "Simulation.hpp"
 
-void Simulation::Update() { }
+void Simulation::InitSimulator()
+{
+	// todo: spit roads in straights and corners classes -- > trafic direction and length of the road
 
-void Simulation::LateUpdate() { }
+	routes.push_back(Route(1));
+}
 
-void Simulation::Draw() { }
+void Simulation::Update(float &delta) {
+	for (Route &route : routes)
+	{
+		route.update(delta);
+	}
+}
+
+void Simulation::LateUpdate(float& delta) { }

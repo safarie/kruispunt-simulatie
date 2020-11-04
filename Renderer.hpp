@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Window.hpp"
+#include "Simulation.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <GLFW/glfw3.h>
@@ -31,6 +32,7 @@
 
 #include <random>
 #include <math.h>
+#include "Route.hpp"
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -38,7 +40,7 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-const int OBJECT_INSTANCES = 1000;
+const int OBJECT_INSTANCES = 5;
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 const std::string MODEL_PATH = "models/Car.obj";
@@ -123,18 +125,20 @@ struct UniformBufferObject {
 class Renderer
 {
 public:
-    Renderer(std::shared_ptr<Window> ptr) : ptr_window(move(ptr)) {};
+    Renderer(std::shared_ptr<Window> ptr_w, std::shared_ptr<Simulation> ptr_s) : ptr_window(move(ptr_w)), ptr_simulation(move(ptr_s)) {}
 
     void initvulkan();
     void cleanup();
-    void drawFrame();
+    void drawFrame(float &delta);
     VkDevice getDevice();
 
 private:
     glm::vec3 rotations[OBJECT_INSTANCES];
     glm::vec3 rotationSpeeds[OBJECT_INSTANCES];
     std::shared_ptr<Window> ptr_window;
+    std::shared_ptr<Simulation> ptr_simulation;
     size_t dynamicAlignment;
+    float cars[OBJECT_INSTANCES] = {};
 
     struct DynamicUniformBufferObject {
         alignas(16) glm::mat4* model = nullptr;
@@ -250,7 +254,8 @@ private:
 
     void prepareDanymicUniformBuffer();
     void updateUniformBuffer(uint32_t currentImage);
-    void updateDynamicUniformBuffer(uint32_t currentImage);
+    void updateDynamicUniformBuffer(uint32_t currentImage, float &delta);
+    void spawnModels();
 
     void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
     VkCommandBuffer beginSingleTimeCommands();
