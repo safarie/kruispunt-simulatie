@@ -1,13 +1,15 @@
 #pragma once
 
 #include "IModel.hpp"
-#include <glm/glm.hpp>
 
 class Vehicle : public IModel
 {
 public:
-	Vehicle(glm::vec3 position);
+	Vehicle(int newID);
+	float getTime();
+	glm::mat4 getPos();
+	int getID();
 
 private:
-	glm::vec3 startPosition;
+	int ID;
 };

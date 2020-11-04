@@ -976,6 +976,7 @@ void Renderer::cleanup()
     vkDestroySurfaceKHR(instance, surface, nullptr);
     vkDestroyInstance(instance, nullptr);
 
+    ptr_simulation.reset();
     ptr_window.reset();
 }
 
@@ -1295,7 +1296,7 @@ void Renderer::prepareDanymicUniformBuffer()
     dubo.model = (glm::mat4*)_aligned_malloc(bufferSize, dynamicAlignment);
     assert(dubo.model);
 
-    spawnModels();
+    //spawnModels();
 }
 
 void Renderer::updateUniformBuffer(uint32_t currentImage) 
@@ -1313,31 +1314,40 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
 
 void Renderer::updateDynamicUniformBuffer(uint32_t currentImage, float &delta) 
 {
-    const float speed = 20.0f;    // m/s
-    const float distance = 15.0f;
-
-    for (size_t i = 0; i < OBJECT_INSTANCES; i++)
+    for (Route &route : ptr_simulation->routes)
     {
-        glm::mat4* modelMat = (glm::mat4*)(((uint64_t)dubo.model + (i * dynamicAlignment)));
-        cars[i] += delta;
-
-        float radius = (i * 3.0f) + 9.0f;    // car, spacing, offset
-        float circumference = (radius * 2) * M_PI;
-        float degPerMeter = 360.0f / circumference;
-        float angle = speed * degPerMeter;
-
-        //std::cout << time * angle << std::endl;
-
-        if (cars[i] * speed < distance) {
-            *modelMat = glm::translate(*modelMat, delta * speed * glm::vec3(-1.0f, 0.0f, 0.0f));
-            continue;
-        } else if (cars[i] * speed > distance && (cars[i] - (distance / speed)) * angle <= 90.0f) {
-            *modelMat = glm::translate(*modelMat, delta * speed * glm::vec3(-1.0, 0.0f, 0.0f));
-            *modelMat = glm::rotate(*modelMat, delta * glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
-        } else {
-            cars[i] = 0.0f;
+        for (IModel *vehicle : route.roadUsers) 
+        {
+            glm::mat4* modelMat = (glm::mat4*)(((uint64_t)dubo.model + (vehicle->getID() * dynamicAlignment)));
+            *modelMat = vehicle->getPos();
         }
     }
+
+    //const float speed = 20.0f;      // meters per second
+    //const float distance = 15.0f;   // meters
+    //float LR = 1.0f;
+    //char direction = 'r';
+
+    //for (size_t i = 0; i < OBJECT_INSTANCES; i++)
+    //{
+    //    direction == 'l' ? LR = 1.0f : LR = -1.0f;  //todo: right turn, negative x,y coords
+    //    glm::mat4* modelMat = (glm::mat4*)(((uint64_t)dubo.model + (i * dynamicAlignment)));
+    //    cars[i] += delta;
+
+    //    float radius = (i * 3.0f) + 9.0f;               // car, spacing, offset
+    //    float circumference = (radius * 2) * M_PI;      // circumference of the turn
+    //    float degPerMeter = 360.0f / circumference;     // how many degrees per meter
+    //    float angle = speed * degPerMeter;              // degrees per second based on speed
+
+    //    if (cars[i] * speed < distance) {
+    //        *modelMat = glm::translate(*modelMat, delta * speed * glm::vec3(-1.0f, 0.0f, 0.0f));
+    //    } else if (cars[i] * speed > distance && (cars[i] - (distance / speed)) * angle <= 90.0f) {
+    //        *modelMat = glm::translate(*modelMat, delta * speed * glm::vec3(-1.0, 0.0f, 0.0f));
+    //        *modelMat = glm::rotate(*modelMat, delta * glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+    //    } else {
+    //        cars[i] = 0.0f;
+    //    }
+    //}
 
     void* data;
     vkMapMemory(device, dynamicUniformBuffersMemory[currentImage], 0, OBJECT_INSTANCES * dynamicAlignment, 0, &data);

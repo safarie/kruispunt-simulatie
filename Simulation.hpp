@@ -1,9 +1,16 @@
 #pragma once
 
+#include "Route.hpp"
+#include <vector>
+
 class Simulation
 {
 public:
-    void Update();
-    void LateUpdate();
-    void Draw();
+    std::vector<Route> routes;
+
+    void InitSimulator();
+    void Update(float& delta);
+    void LateUpdate(float& delta);
+
+private:
 };
