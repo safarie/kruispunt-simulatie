@@ -1295,14 +1295,14 @@ void Renderer::prepareDanymicUniformBuffer()
 
     dubo.model = (glm::mat4*)_aligned_malloc(bufferSize, dynamicAlignment);
     assert(dubo.model);
-
-    //spawnModels();
 }
 
 void Renderer::updateUniformBuffer(uint32_t currentImage) 
 {
     UniformBufferObject ubo{};
-    ubo.view = glm::lookAt(glm::vec3(15.0f, 0.0f, 90.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    glm::mat4 test = ptr_simulation->routes[0].roadUsers[0]->getPos();
+    //ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 90.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 60.0f), glm::vec3(test[3].x, test[3].y, test[3].z), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
     ubo.proj[1][1] *= -1;
 
@@ -1323,49 +1323,11 @@ void Renderer::updateDynamicUniformBuffer(uint32_t currentImage)
         }
     }
 
-    //const float speed = 20.0f;      // meters per second
-    //const float distance = 15.0f;   // meters
-    //float LR = 1.0f;
-    //char direction = 'r';
-
-    //for (size_t i = 0; i < OBJECT_INSTANCES; i++)
-    //{
-    //    direction == 'l' ? LR = 1.0f : LR = -1.0f;  //todo: right turn, negative x,y coords
-    //    glm::mat4* modelMat = (glm::mat4*)(((uint64_t)dubo.model + (i * dynamicAlignment)));
-    //    cars[i] += delta;
-
-    //    float radius = (i * 3.0f) + 9.0f;               // car, spacing, offset
-    //    float circumference = (radius * 2) * M_PI;      // circumference of the turn
-    //    float degPerMeter = 360.0f / circumference;     // how many degrees per meter
-    //    float angle = speed * degPerMeter;              // degrees per second based on speed
-
-    //    if (cars[i] * speed < distance) {
-    //        *modelMat = glm::translate(*modelMat, delta * speed * glm::vec3(-1.0f, 0.0f, 0.0f));
-    //    } else if (cars[i] * speed > distance && (cars[i] - (distance / speed)) * angle <= 90.0f) {
-    //        *modelMat = glm::translate(*modelMat, delta * speed * glm::vec3(-1.0, 0.0f, 0.0f));
-    //        *modelMat = glm::rotate(*modelMat, delta * glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
-    //    } else {
-    //        cars[i] = 0.0f;
-    //    }
-    //}
-
     void* data;
     vkMapMemory(device, dynamicUniformBuffersMemory[currentImage], 0, OBJECT_INSTANCES * dynamicAlignment, 0, &data);
     memcpy(data, dubo.model, OBJECT_INSTANCES * dynamicAlignment);
     vkUnmapMemory(device, dynamicUniformBuffersMemory[currentImage]);
 }
-
-void Renderer::spawnModels() {
-    // initial location off all vehicles (under the map)
-    for (size_t i = 0; i < OBJECT_INSTANCES; i++)
-    {
-        glm::mat4* modelMat = (glm::mat4*)(((uint64_t)dubo.model + (i * dynamicAlignment)));
-
-        *modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, i * 3.0f + 9.0f, 0.0f));
-    }
-
-    // note: when "spawning" the vehicles --> set spawn location and rotate vehicle in the correct direction!
-};
 
 
 // texture mapping

@@ -36,6 +36,4 @@ public:
 
 private:
 	int routeID;					// route id
-	const float speed = 14.0f;      // meters per second
-	const float distance = 30.0f;	// distance in meters
 };
