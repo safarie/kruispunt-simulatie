@@ -40,11 +40,20 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-const int OBJECT_INSTANCES = 1; // !! if you change size here, change i (in the for loop) in Route.hpp (ln 19)
+// const int OBJECT_INSTANCES = 1; // !! if you change size here, change i (in the for loop) in Route.hpp (ln 19)
+const std::vector<int> modelInstances = {
+    5,  // Busses
+    15  // Cars
+};
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
-const std::string MODEL_PATH = "models/Road.obj";
 const std::string TEXTURE_PATH = "textures/Car.png";
+const std::vector<std::string> MODEL_PATHS = { 
+    "models/Bus.obj", 
+    "models/Car_new.obj"
+};
+
+// const std::string MODEL_PATH = "models/Road.obj";
 
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
@@ -133,12 +142,11 @@ public:
     VkDevice getDevice();
 
 private:
-    glm::vec3 rotations[OBJECT_INSTANCES];
-    glm::vec3 rotationSpeeds[OBJECT_INSTANCES];
+    int totalModelInstances = 0;
+
     std::shared_ptr<Window> ptr_window;
     std::shared_ptr<Simulation> ptr_simulation;
     size_t dynamicAlignment;
-    float cars[OBJECT_INSTANCES] = {};
 
     struct DynamicUniformBufferObject {
         alignas(16) glm::mat4* model = nullptr;
@@ -178,8 +186,8 @@ private:
     VkDeviceMemory depthImageMemory;
     VkImageView depthImageView;
 
-    std::vector<Vertex> vertices;
-    std::vector<uint32_t> indices;
+    std::vector<std::vector<Vertex>> vertices;
+    std::vector<std::vector<uint32_t>> indices;
 
     VkBuffer vertexBuffer;
     VkDeviceMemory vertexBufferMemory;
@@ -220,7 +228,7 @@ private:
     void createTextureImage();
     void createTextureImageView();
     void createTextureSampler();
-    void loadModel();
+    void loadModels();
     void createVertexBuffer();
     void createIndexBuffer();
     void createUniformBuffers();

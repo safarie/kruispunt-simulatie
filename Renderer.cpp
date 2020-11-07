@@ -20,7 +20,7 @@ void Renderer::initvulkan()
     createTextureImage();
     createTextureImageView();
     createTextureSampler();
-    loadModel();
+    loadModels();
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffers();
@@ -604,49 +604,60 @@ void Renderer::createTextureSampler()
     }
 }
 
-void Renderer::loadModel()
+void Renderer::loadModels()
 {
+    for (auto& t : modelInstances)
+        totalModelInstances += t;
+
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
     std::string warn, err;
 
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str())) {
-        throw std::runtime_error(warn + err);
-    }
+    for (size_t i = 0; i < MODEL_PATHS.size(); i++)
+    {
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATHS[i].c_str())) {
+            throw std::runtime_error(warn + err);
+        }
 
-    std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+        std::unordered_map<Vertex, uint32_t> uniqueVertices{};
 
-    for (const auto& shape : shapes) {
-        for (const auto& index : shape.mesh.indices) {
-            Vertex vertex{};
+        for (const auto& shape : shapes) {
+            for (const auto& index : shape.mesh.indices) {
+                Vertex vertex{};
 
-            vertex.pos = {
-                attrib.vertices[3 * index.vertex_index + 0],
-                attrib.vertices[3 * index.vertex_index + 1],
-                attrib.vertices[3 * index.vertex_index + 2]
-            };
+                vertex.pos = {
+                    attrib.vertices[3 * index.vertex_index + 0],
+                    attrib.vertices[3 * index.vertex_index + 1],
+                    attrib.vertices[3 * index.vertex_index + 2]
+                };
 
-            vertex.texCoord = {
-                attrib.texcoords[2 * index.texcoord_index + 0],
-                1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-            };
+                vertex.texCoord = {
+                    attrib.texcoords[2 * index.texcoord_index + 0],
+                    1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+                };
 
-            vertex.color = { 1.0f, 1.0f, 1.0f };
+                vertex.color = { 1.0f, 1.0f, 1.0f };
 
-            if (uniqueVertices.count(vertex) == 0) {
-                uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-                vertices.push_back(vertex);
+                if (uniqueVertices.count(vertex) == 0) {
+                    uniqueVertices[vertex] = static_cast<uint32_t>(vertices[i].size());
+                    vertices[i].push_back(vertex);
+                }
+
+                indices[i].push_back(uniqueVertices[vertex]);
             }
-
-            indices.push_back(uniqueVertices[vertex]);
         }
     }
 }
 
 void Renderer::createVertexBuffer()
 {
-    VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+    // VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size(); 
+    VkDeviceSize bufferSize = 0;
+    for (size_t i = 0; i < vertices.size(); i++)
+    {
+        bufferSize += sizeof(vertices[i][0]) * vertices[i].size();
+    }
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -667,7 +678,12 @@ void Renderer::createVertexBuffer()
 
 void Renderer::createIndexBuffer()
 {
-    VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+    // VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+    VkDeviceSize bufferSize = 0;
+    for (size_t i = 0; i < indices.size(); i++)
+    {
+        bufferSize += sizeof(indices[i][0]) * indices[i].size();
+    }
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -691,7 +707,7 @@ void Renderer::createUniformBuffers()
     prepareDanymicUniformBuffer();
 
     VkDeviceSize uniformBufferSize = sizeof(UniformBufferObject);
-    VkDeviceSize dynamicUniformBufferSize = OBJECT_INSTANCES * dynamicAlignment;
+    VkDeviceSize dynamicUniformBufferSize = totalModelInstances * dynamicAlignment;
 
     uniformBuffers.resize(swapChainImages.size());
     dynamicUniformBuffers.resize(swapChainImages.size());
@@ -830,12 +846,17 @@ void Renderer::createCommandBuffers()
 
         vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-        for (uint32_t j = 0; j < OBJECT_INSTANCES; j++)
+        for (size_t j = 0; j < modelInstances.size(); j++)
         {
-            uint32_t dynamicOffset = j * dynamicAlignment;
-            vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 1, &dynamicOffset);
+            int t = 0;
+            for (uint32_t k = 0; k < modelInstances[j]; k++)
+            {
+                uint32_t dynamicOffset = (t + k) * dynamicAlignment;
+                vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 1, &dynamicOffset);
 
-            vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+                vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices[i].size()), 1, 0, 0, 0);
+            }
+            t += modelInstances[j];
         }
 
         vkCmdEndRenderPass(commandBuffers[i]);
@@ -1291,7 +1312,7 @@ void Renderer::prepareDanymicUniformBuffer()
         dynamicAlignment = (dynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
     }
 
-    size_t bufferSize = OBJECT_INSTANCES * dynamicAlignment;
+    size_t bufferSize = totalModelInstances * dynamicAlignment;
 
     dubo.model = (glm::mat4*)_aligned_malloc(bufferSize, dynamicAlignment);
     assert(dubo.model);
@@ -1325,8 +1346,8 @@ void Renderer::updateDynamicUniformBuffer(uint32_t currentImage)
     }
 
     void* data;
-    vkMapMemory(device, dynamicUniformBuffersMemory[currentImage], 0, OBJECT_INSTANCES * dynamicAlignment, 0, &data);
-    memcpy(data, dubo.model, OBJECT_INSTANCES * dynamicAlignment);
+    vkMapMemory(device, dynamicUniformBuffersMemory[currentImage], 0, totalModelInstances * dynamicAlignment, 0, &data);
+    memcpy(data, dubo.model, totalModelInstances * dynamicAlignment);
     vkUnmapMemory(device, dynamicUniformBuffersMemory[currentImage]);
 }
 

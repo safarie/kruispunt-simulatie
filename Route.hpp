@@ -17,7 +17,7 @@ public:
 		routeID = ID;
 
 		// !! if you change size here, change OBJECT_INSTANCES in Renderer.hpp (ln 43)
-		for (size_t i = 0; i < 1; i++)
+		for (size_t i = 0; i < 20; i++)
 		{
 			addRoadUser(new Vehicle(i));
 		}
