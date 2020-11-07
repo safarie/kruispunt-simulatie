@@ -1,9 +1,6 @@
-#include <memory>
-
 #include "Simulation.hpp"
 #include "Renderer.hpp"
 #include "Window.hpp"
-
 #include "Socket.hpp"
 
 int main()
@@ -15,6 +12,7 @@ int main()
 
     bool connected = true;
     float previousTime = 0.0f;
+    float frameTime = 0.0f;
 
     //testing sockets
     socket.Connect();
@@ -40,13 +38,23 @@ int main()
         glfwPollEvents();
         if (connected)
             connected = socket.Reciving();
-        ptr_simulation->Update(delta);
-        ptr_simulation->LateUpdate(delta);
+
+        frameTime += delta;
+        if (frameTime <= 1.0f / 60.0f) {
+            continue;
+        }
+
+        ptr_simulation->Update(frameTime);
+        ptr_simulation->LateUpdate(frameTime);    
         ptr_renderer->drawFrame();
+
+        frameTime = 0.0f;
     }
+
+    // wait till current frame is done
     vkDeviceWaitIdle(ptr_renderer->getDevice());
 
-    // 4. cleanup
+    // 5. cleanup
     socket.Close();
     ptr_renderer->cleanup();
     ptr_renderer.reset();

@@ -43,7 +43,7 @@ const bool enableValidationLayers = true;
 const int OBJECT_INSTANCES = 1; // !! if you change size here, change i (in the for loop) in Route.hpp (ln 19)
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
-const std::string MODEL_PATH = "models/Car.obj";
+const std::string MODEL_PATH = "models/Road.obj";
 const std::string TEXTURE_PATH = "textures/Car.png";
 
 const std::vector<const char*> validationLayers = {

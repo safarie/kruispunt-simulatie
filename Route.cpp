@@ -6,9 +6,9 @@ void Route::update(float &delta)
 	{
         glm::mat4* modelMat = &vehicle->getPos();
 
-        float speed = 5.0f;                            // meters per second
+        float speed = 14.0f;                            // meters per second
         float distance = 30.0f;	                        // distance in meters
-        float radius = 4.0f;                            // radius of the turn
+        float radius = 8.0f;                            // radius of the turn
         float circumference = (radius * 2) * M_PI;      // circumference of the turn
         float degPerMeter = 360.0f / circumference;     // how many degrees per meter
         float angle = speed * degPerMeter;              // degrees per second based on speed

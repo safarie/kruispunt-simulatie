@@ -883,7 +883,7 @@ void Renderer::drawFrame() {
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
-    updateUniformBuffer(imageIndex);    
+    updateUniformBuffer(imageIndex);
     updateDynamicUniformBuffer(imageIndex);
 
     if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
@@ -1300,9 +1300,10 @@ void Renderer::prepareDanymicUniformBuffer()
 void Renderer::updateUniformBuffer(uint32_t currentImage) 
 {
     UniformBufferObject ubo{};
-    glm::mat4 test = ptr_simulation->routes[0].roadUsers[0]->getPos();
-    //ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 90.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 60.0f), glm::vec3(test[3].x, test[3].y, test[3].z), glm::vec3(0.0f, 0.0f, 1.0f));
+    // glm::mat4 test = ptr_simulation->routes[0].roadUsers[0]->getPos();
+    // ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 15.0f), glm::vec3(test[3].x, test[3].y, test[3].z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 90.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
     ubo.proj[1][1] *= -1;
 
@@ -1312,7 +1313,7 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
     vkUnmapMemory(device, uniformBuffersMemory[currentImage]);
 }
 
-void Renderer::updateDynamicUniformBuffer(uint32_t currentImage) 
+void Renderer::updateDynamicUniformBuffer(uint32_t currentImage)
 {
     for (Route &route : ptr_simulation->routes)
     {
