@@ -55,8 +55,8 @@ const std::vector<const char*> deviceExtensions = {
 struct ModelInfo {
     std::string model;
     int modelCount;
-    int indicesCount;
-    int vertexCount;
+    uint32_t indicesCount;
+    uint32_t vertexCount;
 };
 
 struct QueueFamilyIndices {
@@ -183,11 +183,11 @@ private:
     VkDeviceMemory depthImageMemory;
     VkImageView depthImageView;
 
-    std::vector<std::vector<Vertex>> vertices;
+    std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
 
-    std::vector<VkBuffer> vertexBuffer;
-    std::vector<VkDeviceMemory> vertexBufferMemory;
+    VkBuffer vertexBuffer;
+    VkDeviceMemory vertexBufferMemory;
     VkBuffer indexBuffer;
     VkDeviceMemory indexBufferMemory;
 

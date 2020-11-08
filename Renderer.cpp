@@ -659,38 +659,31 @@ void Renderer::loadModels()
             }
         }
         models[i].vertexCount = tempVertices.size();
-        vertices.push_back(tempVertices);
-        models[1].indicesCount = tempIndices.size();
+        vertices.insert(vertices.end(), tempVertices.begin(), tempVertices.end());
+        models[i].indicesCount = tempIndices.size();
         indices.insert(indices.end(), tempIndices.begin(), tempIndices.end());
     }
 }
 
 void Renderer::createVertexBuffer()
 {
-    // VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size(); 
+    VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size(); 
 
-    for (size_t i = 0; i < vertices.size(); i++)
-    {
-        vertexBuffer.push_back(VkBuffer());
-        vertexBufferMemory.push_back(VkDeviceMemory());
-        VkDeviceSize bufferSize = sizeof(vertices[i][0]) * vertices[i].size();
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+    void* data;
+    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, vertices.data(), (size_t)bufferSize);
+    vkUnmapMemory(device, stagingBufferMemory);
 
-        void* data;
-        vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, vertices[i].data(), (size_t)bufferSize);
-        vkUnmapMemory(device, stagingBufferMemory);
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 
-        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer[i], vertexBufferMemory[i]);
+    copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
-        copyBuffer(stagingBuffer, vertexBuffer[i], bufferSize);
-
-        vkDestroyBuffer(device, stagingBuffer, nullptr);
-        vkFreeMemory(device, stagingBufferMemory, nullptr);
-    }
+    vkDestroyBuffer(device, stagingBuffer, nullptr);
+    vkFreeMemory(device, stagingBufferMemory, nullptr);
 }
 
 void Renderer::createIndexBuffer()
@@ -853,7 +846,7 @@ void Renderer::createCommandBuffers()
 
         vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-        std::vector<VkBuffer> vertexBuffers = vertexBuffer;
+        std::vector<VkBuffer> vertexBuffers = { vertexBuffer };
         VkDeviceSize offsets[] = { 0 };
 
         vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers.data(), offsets);
@@ -862,6 +855,7 @@ void Renderer::createCommandBuffers()
 
         int modelOffset = 0;
         int indicesOffset = 0;
+        int vertexOffset = 0;
         for (size_t j = 0; j < models.size(); j++)
         {
             for (uint32_t k = 0; k < models[j].modelCount; k++)
@@ -869,10 +863,11 @@ void Renderer::createCommandBuffers()
                 uint32_t dynamicOffset = (modelOffset + k) * dynamicAlignment;
                 vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 1, &dynamicOffset);
 
-                vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(models[j].indicesCount), 1, indicesOffset, 0, 0);  // indices count per model, 1, offset to next model, needed?, 0
+                vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(models[j].indicesCount), 1, indicesOffset, vertexOffset, 0);  // indices count per model, 1, offset to next model, needed?, 0
             }
             modelOffset += models[j].modelCount;
             indicesOffset += models[j].indicesCount;
+            vertexOffset += models[j].vertexCount;
         }
 
         vkCmdEndRenderPass(commandBuffers[i]);
@@ -993,11 +988,8 @@ void Renderer::cleanup()
     vkDestroyBuffer(device, indexBuffer, nullptr);
     vkFreeMemory(device, indexBufferMemory, nullptr);
 
-    for (size_t vb = 0; vb < vertexBuffer.size(); vb++)
-    {
-        vkDestroyBuffer(device, vertexBuffer[vb], nullptr);
-        vkFreeMemory(device, vertexBufferMemory[vb], nullptr);
-    }
+    vkDestroyBuffer(device, vertexBuffer, nullptr);
+    vkFreeMemory(device, vertexBufferMemory, nullptr);
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
@@ -1343,7 +1335,7 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
     // glm::mat4 test = ptr_simulation->routes[0].roadUsers[0]->getPos();
     // ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 15.0f), glm::vec3(test[3].x, test[3].y, test[3].z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-    ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 90.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.view = glm::lookAt(glm::vec3(50.0f, 50.0f, 15.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
     ubo.proj[1][1] *= -1;
 

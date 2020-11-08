@@ -25,6 +25,6 @@ void Route::update(float &delta)
             vehicle->resetTime();
         }
 
-		//vehicle->update(delta, *modelMat);
+		vehicle->update(delta, *modelMat);
 	}
 }
