@@ -40,20 +40,9 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-// const int OBJECT_INSTANCES = 1; // !! if you change size here, change i (in the for loop) in Route.hpp (ln 19)
-const std::vector<int> modelInstances = {
-    5,  // Busses
-    15  // Cars
-};
+const std::string TEXTURE_PATH = "textures/Car.png";
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
-const std::string TEXTURE_PATH = "textures/Car.png";
-const std::vector<std::string> MODEL_PATHS = { 
-    "models/Bus.obj", 
-    "models/Car_new.obj"
-};
-
-// const std::string MODEL_PATH = "models/Road.obj";
 
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
@@ -61,6 +50,13 @@ const std::vector<const char*> validationLayers = {
 
 const std::vector<const char*> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
+
+struct ModelInfo {
+    std::string model;
+    int modelCount;
+    int indicesCount;
+    int vertexCount;
 };
 
 struct QueueFamilyIndices {
@@ -143,6 +139,7 @@ public:
 
 private:
     int totalModelInstances = 0;
+    std::vector<ModelInfo> models;
 
     std::shared_ptr<Window> ptr_window;
     std::shared_ptr<Simulation> ptr_simulation;
@@ -187,10 +184,10 @@ private:
     VkImageView depthImageView;
 
     std::vector<std::vector<Vertex>> vertices;
-    std::vector<std::vector<uint32_t>> indices;
+    std::vector<uint32_t> indices;
 
-    VkBuffer vertexBuffer;
-    VkDeviceMemory vertexBufferMemory;
+    std::vector<VkBuffer> vertexBuffer;
+    std::vector<VkDeviceMemory> vertexBufferMemory;
     VkBuffer indexBuffer;
     VkDeviceMemory indexBufferMemory;
 

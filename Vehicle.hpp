@@ -5,7 +5,7 @@
 class Vehicle : public IModel
 {
 public:
-	Vehicle(int newID);
+	Vehicle(int newID, float offset);
 	float getTime();
 	glm::mat4 getPos();
 	int getID();

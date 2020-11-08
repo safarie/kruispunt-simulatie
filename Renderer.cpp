@@ -606,21 +606,32 @@ void Renderer::createTextureSampler()
 
 void Renderer::loadModels()
 {
-    for (auto& t : modelInstances)
-        totalModelInstances += t;
+    // !! if you change model counts here, change i (in the for loop) in Route.hpp (ln 19)
+    models.push_back(ModelInfo{});
+    models[0].model = "models/Bus.obj";
+    models[0].modelCount = 5;
 
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    std::string warn, err;
+    models.push_back(ModelInfo{});
+    models[1].model = "models/Car_new.obj";
+    models[1].modelCount = 15;
 
-    for (size_t i = 0; i < MODEL_PATHS.size(); i++)
+    for (auto& m : models)
+        totalModelInstances += m.modelCount;
+
+    for (size_t i = 0; i < models.size(); i++)
     {
-        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATHS[i].c_str())) {
+        tinyobj::attrib_t attrib;
+        std::vector<tinyobj::shape_t> shapes;
+        std::vector<tinyobj::material_t> materials;
+        std::string warn, err;
+
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, models[i].model.c_str())) {
             throw std::runtime_error(warn + err);
         }
 
-        std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+        std::unordered_map<Vertex, uint32_t> uniqueVertices{}; 
+        std::vector<Vertex> tempVertices;
+        std::vector<uint32_t> tempIndices;
 
         for (const auto& shape : shapes) {
             for (const auto& index : shape.mesh.indices) {
@@ -640,50 +651,51 @@ void Renderer::loadModels()
                 vertex.color = { 1.0f, 1.0f, 1.0f };
 
                 if (uniqueVertices.count(vertex) == 0) {
-                    uniqueVertices[vertex] = static_cast<uint32_t>(vertices[i].size());
-                    vertices[i].push_back(vertex);
+                    uniqueVertices[vertex] = static_cast<uint32_t>(tempVertices.size());
+                    tempVertices.push_back(vertex);
                 }
 
-                indices[i].push_back(uniqueVertices[vertex]);
+                tempIndices.push_back(uniqueVertices[vertex]);
             }
         }
+        models[i].vertexCount = tempVertices.size();
+        vertices.push_back(tempVertices);
+        models[1].indicesCount = tempIndices.size();
+        indices.insert(indices.end(), tempIndices.begin(), tempIndices.end());
     }
 }
 
 void Renderer::createVertexBuffer()
 {
     // VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size(); 
-    VkDeviceSize bufferSize = 0;
+
     for (size_t i = 0; i < vertices.size(); i++)
     {
-        bufferSize += sizeof(vertices[i][0]) * vertices[i].size();
+        vertexBuffer.push_back(VkBuffer());
+        vertexBufferMemory.push_back(VkDeviceMemory());
+        VkDeviceSize bufferSize = sizeof(vertices[i][0]) * vertices[i].size();
+
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
+        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+        void* data;
+        vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+        memcpy(data, vertices[i].data(), (size_t)bufferSize);
+        vkUnmapMemory(device, stagingBufferMemory);
+
+        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer[i], vertexBufferMemory[i]);
+
+        copyBuffer(stagingBuffer, vertexBuffer[i], bufferSize);
+
+        vkDestroyBuffer(device, stagingBuffer, nullptr);
+        vkFreeMemory(device, stagingBufferMemory, nullptr);
     }
-
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-    void* data;
-    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, vertices.data(), (size_t)bufferSize);
-    vkUnmapMemory(device, stagingBufferMemory);
-
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
-
-    copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-
-    vkDestroyBuffer(device, stagingBuffer, nullptr);
-    vkFreeMemory(device, stagingBufferMemory, nullptr);
 }
 
 void Renderer::createIndexBuffer()
 {
-    // VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
-    VkDeviceSize bufferSize = 0;
-    for (size_t i = 0; i < indices.size(); i++)
-    {
-        bufferSize += sizeof(indices[i][0]) * indices[i].size();
-    }
+    VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -700,6 +712,7 @@ void Renderer::createIndexBuffer()
 
     vkDestroyBuffer(device, stagingBuffer, nullptr);
     vkFreeMemory(device, stagingBufferMemory, nullptr);
+    
 }
 
 void Renderer::createUniformBuffers()
@@ -840,23 +853,26 @@ void Renderer::createCommandBuffers()
 
         vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-        VkBuffer vertexBuffers[] = { vertexBuffer };
+        std::vector<VkBuffer> vertexBuffers = vertexBuffer;
         VkDeviceSize offsets[] = { 0 };
-        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+
+        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers.data(), offsets);
 
         vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-        for (size_t j = 0; j < modelInstances.size(); j++)
+        int modelOffset = 0;
+        int indicesOffset = 0;
+        for (size_t j = 0; j < models.size(); j++)
         {
-            int t = 0;
-            for (uint32_t k = 0; k < modelInstances[j]; k++)
+            for (uint32_t k = 0; k < models[j].modelCount; k++)
             {
-                uint32_t dynamicOffset = (t + k) * dynamicAlignment;
+                uint32_t dynamicOffset = (modelOffset + k) * dynamicAlignment;
                 vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 1, &dynamicOffset);
 
-                vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices[i].size()), 1, 0, 0, 0);
+                vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(models[j].indicesCount), 1, indicesOffset, 0, 0);  // indices count per model, 1, offset to next model, needed?, 0
             }
-            t += modelInstances[j];
+            modelOffset += models[j].modelCount;
+            indicesOffset += models[j].indicesCount;
         }
 
         vkCmdEndRenderPass(commandBuffers[i]);
@@ -977,8 +993,11 @@ void Renderer::cleanup()
     vkDestroyBuffer(device, indexBuffer, nullptr);
     vkFreeMemory(device, indexBufferMemory, nullptr);
 
-    vkDestroyBuffer(device, vertexBuffer, nullptr);
-    vkFreeMemory(device, vertexBufferMemory, nullptr);
+    for (size_t vb = 0; vb < vertexBuffer.size(); vb++)
+    {
+        vkDestroyBuffer(device, vertexBuffer[vb], nullptr);
+        vkFreeMemory(device, vertexBufferMemory[vb], nullptr);
+    }
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
