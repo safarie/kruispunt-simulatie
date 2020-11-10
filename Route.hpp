@@ -17,7 +17,7 @@ public:
 		routeID = ID;
 
 		// !! if you change size here, check total modelcount in Renderer.cpp (ln 609)
-		for (size_t i = 0; i < 20; i++)
+		for (size_t i = 0; i < 25; i++)
 		{
 			addRoadUser(new Vehicle(i, i * 3.0f));
 		}

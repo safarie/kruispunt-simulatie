@@ -21,8 +21,8 @@ void Renderer::initvulkan()
     createTextureImageView();
     createTextureSampler();
     loadModels();
-    createVertexBuffer();
-    createIndexBuffer();
+    createVertexBuffers();
+    createIndexBuffers();
     createUniformBuffers();
     createDescriptorPool();
     createDescriptorSets();
@@ -226,8 +226,9 @@ void Renderer::cleanupSwapChain() {
 
     vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 
-    vkDestroyPipeline(device, graphicsPipeline, nullptr);
-    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+    vehiclePipeline.destroy(device);
+    junctionPipeline.destroy(device);
+
     vkDestroyRenderPass(device, renderPass, nullptr);
 
     for (auto imageView : swapChainImageViews) {
@@ -243,7 +244,8 @@ void Renderer::cleanupSwapChain() {
         vkFreeMemory(device, dynamicUniformBuffersMemory[i], nullptr);
     }
 
-    vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+    vehicleDescriptor.destroyPool(device);
+    junctionDescriptor.destroyPool(device);
 }
 
 void Renderer::recreateSwapChain()
@@ -361,38 +363,68 @@ void Renderer::createDescriptorSetLayout()
     samplerLayoutBinding.pImmutableSamplers = nullptr;
     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    std::array<VkDescriptorSetLayoutBinding, 3> bindings = { uboLayoutBinding, duboLayoutBinding, samplerLayoutBinding };
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-    layoutInfo.pBindings = bindings.data();
+    std::array<VkDescriptorSetLayoutBinding, 3> vehicleBindings = { uboLayoutBinding, duboLayoutBinding, samplerLayoutBinding };
+    VkDescriptorSetLayoutCreateInfo vehicleLayoutInfo{};
+    vehicleLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    vehicleLayoutInfo.bindingCount = static_cast<uint32_t>(vehicleBindings.size());
+    vehicleLayoutInfo.pBindings = vehicleBindings.data();
 
-    if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+    if (vkCreateDescriptorSetLayout(device, &vehicleLayoutInfo, nullptr, &vehicleDescriptor.layout) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create descriptor set layout!");
+    }
+
+    std::array<VkDescriptorSetLayoutBinding, 2> junctionBindings = { uboLayoutBinding, samplerLayoutBinding };
+    VkDescriptorSetLayoutCreateInfo junctionLayoutInfo{};
+    junctionLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    junctionLayoutInfo.bindingCount = static_cast<uint32_t>(junctionBindings.size());
+    junctionLayoutInfo.pBindings = junctionBindings.data();
+
+    if (vkCreateDescriptorSetLayout(device, &junctionLayoutInfo, nullptr, &junctionDescriptor.layout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create descriptor set layout!");
     }
 }
 
 void Renderer::createGraphicsPipeline()
 {
-    auto vertShaderCode = readFile("shaders/vert.spv");
-    auto fragShaderCode = readFile("shaders/frag.spv");
+    auto vehicleVertShaderCode = readFile("shaders/vehicleVert.spv");
+    auto vehicleFragShaderCode = readFile("shaders/vehicleFrag.spv");
 
-    VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
-    VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
+    VkShaderModule vehicleVertShaderModule = createShaderModule(vehicleVertShaderCode);
+    VkShaderModule vehicleFragShaderModule = createShaderModule(vehicleFragShaderCode);
 
-    VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-    vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    vertShaderStageInfo.module = vertShaderModule;
-    vertShaderStageInfo.pName = "main";
+    VkPipelineShaderStageCreateInfo vehicleVertShaderStageInfo{};
+    vehicleVertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vehicleVertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    vehicleVertShaderStageInfo.module = vehicleVertShaderModule;
+    vehicleVertShaderStageInfo.pName = "main";
 
-    VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-    fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    fragShaderStageInfo.module = fragShaderModule;
-    fragShaderStageInfo.pName = "main";
+    VkPipelineShaderStageCreateInfo vehicleFragShaderStageInfo{};
+    vehicleFragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vehicleFragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    vehicleFragShaderStageInfo.module = vehicleFragShaderModule;
+    vehicleFragShaderStageInfo.pName = "main";
 
-    VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+    VkPipelineShaderStageCreateInfo vehicleShaderStages[] = { vehicleVertShaderStageInfo, vehicleFragShaderStageInfo };
+
+    auto junctionVertShaderCode = readFile("shaders/junctionVert.spv");
+    auto junctionFragShaderCode = readFile("shaders/junctionFrag.spv");
+
+    VkShaderModule junctionVertShaderModule = createShaderModule(junctionVertShaderCode);
+    VkShaderModule junctionFragShaderModule = createShaderModule(junctionFragShaderCode);
+
+    VkPipelineShaderStageCreateInfo junctionVertShaderStageInfo{};
+    junctionVertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    junctionVertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    junctionVertShaderStageInfo.module = junctionVertShaderModule;
+    junctionVertShaderStageInfo.pName = "main";
+
+    VkPipelineShaderStageCreateInfo junctionFragShaderStageInfo{};
+    junctionFragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    junctionFragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    junctionFragShaderStageInfo.module = junctionFragShaderModule;
+    junctionFragShaderStageInfo.pName = "main";
+
+    VkPipelineShaderStageCreateInfo junctionShaderStages[] = { junctionVertShaderStageInfo, junctionFragShaderStageInfo };
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -467,19 +499,28 @@ void Renderer::createGraphicsPipeline()
     colorBlending.blendConstants[2] = 0.0f;
     colorBlending.blendConstants[3] = 0.0f;
 
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+    VkPipelineLayoutCreateInfo vehiclePipelineLayoutInfo{};
+    vehiclePipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    vehiclePipelineLayoutInfo.setLayoutCount = 1;
+    vehiclePipelineLayoutInfo.pSetLayouts = &vehicleDescriptor.layout;
 
-    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+    VkPipelineLayoutCreateInfo junctionPipelineLayoutInfo{};
+    junctionPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    junctionPipelineLayoutInfo.setLayoutCount = 1;
+    junctionPipelineLayoutInfo.pSetLayouts = &junctionDescriptor.layout;
+
+    if (vkCreatePipelineLayout(device, &vehiclePipelineLayoutInfo, nullptr, &vehiclePipeline.Layout) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create pipeline layout!");
+    }
+
+    if (vkCreatePipelineLayout(device, &junctionPipelineLayoutInfo, nullptr, &junctionPipeline.Layout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create pipeline layout!");
     }
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount = 2;
-    pipelineInfo.pStages = shaderStages;
+    pipelineInfo.pStages = vehicleShaderStages;
     pipelineInfo.pVertexInputState = &vertexInputInfo;
     pipelineInfo.pInputAssemblyState = &inputAssembly;
     pipelineInfo.pViewportState = &viewportState;
@@ -487,17 +528,28 @@ void Renderer::createGraphicsPipeline()
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.pColorBlendState = &colorBlending;
-    pipelineInfo.layout = pipelineLayout;
+    pipelineInfo.layout = vehiclePipeline.Layout;
     pipelineInfo.renderPass = renderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+
+    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vehiclePipeline.pipeline) != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics pipeline!");
     }
 
-    vkDestroyShaderModule(device, fragShaderModule, nullptr);
-    vkDestroyShaderModule(device, vertShaderModule, nullptr);
+    vkDestroyShaderModule(device, vehicleVertShaderModule, nullptr);
+    vkDestroyShaderModule(device, vehicleFragShaderModule, nullptr);
+
+    pipelineInfo.pStages = junctionShaderStages;
+    pipelineInfo.layout = junctionPipeline.Layout;
+
+    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &junctionPipeline.pipeline) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create graphics pipeline!");
+    }
+
+    vkDestroyShaderModule(device, junctionVertShaderModule, nullptr);
+    vkDestroyShaderModule(device, junctionFragShaderModule, nullptr);
 }
 
 void Renderer::createCommandPool()
@@ -607,105 +659,25 @@ void Renderer::createTextureSampler()
 void Renderer::loadModels()
 {
     // !! if you change model counts here, change i (in the for loop) in Route.hpp (ln 19)
-    models.push_back(ModelInfo{});
-    models[0].model = "models/Bus.obj";
-    models[0].modelCount = 5;
-
-    models.push_back(ModelInfo{});
-    models[1].model = "models/Car_new.obj";
-    models[1].modelCount = 15;
+    models.push_back(loadModel("models/Bus.obj", 10, vehicleBuffers));
+    models.push_back(loadModel("models/Car_new.obj", 15, vehicleBuffers));
 
     for (auto& m : models)
         totalModelInstances += m.modelCount;
 
-    for (size_t i = 0; i < models.size(); i++)
-    {
-        tinyobj::attrib_t attrib;
-        std::vector<tinyobj::shape_t> shapes;
-        std::vector<tinyobj::material_t> materials;
-        std::string warn, err;
-
-        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, models[i].model.c_str())) {
-            throw std::runtime_error(warn + err);
-        }
-
-        std::unordered_map<Vertex, uint32_t> uniqueVertices{}; 
-        std::vector<Vertex> tempVertices;
-        std::vector<uint32_t> tempIndices;
-
-        for (const auto& shape : shapes) {
-            for (const auto& index : shape.mesh.indices) {
-                Vertex vertex{};
-
-                vertex.pos = {
-                    attrib.vertices[3 * index.vertex_index + 0],
-                    attrib.vertices[3 * index.vertex_index + 1],
-                    attrib.vertices[3 * index.vertex_index + 2]
-                };
-
-                vertex.texCoord = {
-                    attrib.texcoords[2 * index.texcoord_index + 0],
-                    1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-                };
-
-                vertex.color = { 1.0f, 1.0f, 1.0f };
-
-                if (uniqueVertices.count(vertex) == 0) {
-                    uniqueVertices[vertex] = static_cast<uint32_t>(tempVertices.size());
-                    tempVertices.push_back(vertex);
-                }
-
-                tempIndices.push_back(uniqueVertices[vertex]);
-            }
-        }
-        models[i].vertexCount = tempVertices.size();
-        vertices.insert(vertices.end(), tempVertices.begin(), tempVertices.end());
-        models[i].indicesCount = tempIndices.size();
-        indices.insert(indices.end(), tempIndices.begin(), tempIndices.end());
-    }
+    junctionModelInfo = loadModel("models/Road.obj", 1, junctionBuffers);
 }
 
-void Renderer::createVertexBuffer()
+void Renderer::createVertexBuffers()
 {
-    VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size(); 
-
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-    void* data;
-    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, vertices.data(), (size_t)bufferSize);
-    vkUnmapMemory(device, stagingBufferMemory);
-
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
-
-    copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-
-    vkDestroyBuffer(device, stagingBuffer, nullptr);
-    vkFreeMemory(device, stagingBufferMemory, nullptr);
+    createVertexBuffer(vehicleBuffers);
+    createVertexBuffer(junctionBuffers);
 }
 
-void Renderer::createIndexBuffer()
+void Renderer::createIndexBuffers()
 {
-    VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
-
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-    void* data;
-    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, indices.data(), (size_t)bufferSize);
-    vkUnmapMemory(device, stagingBufferMemory);
-
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
-
-    copyBuffer(stagingBuffer, indexBuffer, bufferSize);
-
-    vkDestroyBuffer(device, stagingBuffer, nullptr);
-    vkFreeMemory(device, stagingBufferMemory, nullptr);
-    
+    createIndexBuffer(vehicleBuffers);
+    createIndexBuffer(junctionBuffers);
 }
 
 void Renderer::createUniformBuffers()
@@ -728,36 +700,73 @@ void Renderer::createUniformBuffers()
 
 void Renderer::createDescriptorPool()
 {
-    std::array<VkDescriptorPoolSize, 3> poolSizes{};
-    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChainImages.size());
-    poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChainImages.size());
-    poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[2].descriptorCount = static_cast<uint32_t>(swapChainImages.size());
+    VkDescriptorPoolSize uniformBuffer{};
+    uniformBuffer.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uniformBuffer.descriptorCount = static_cast<uint32_t>(swapChainImages.size());
 
-    VkDescriptorPoolCreateInfo poolInfo{};
-    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-    poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size());
+    VkDescriptorPoolSize uniformBufferDynamic{};
+    uniformBufferDynamic.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    uniformBufferDynamic.descriptorCount = static_cast<uint32_t>(swapChainImages.size());
 
-    if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
+    VkDescriptorPoolSize combinedImageSampler{};
+    combinedImageSampler.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    combinedImageSampler.descriptorCount = static_cast<uint32_t>(swapChainImages.size());
+
+    std::array<VkDescriptorPoolSize, 3> vehilcePoolSizes{};
+    vehilcePoolSizes[0] = uniformBuffer;
+    vehilcePoolSizes[1] = uniformBufferDynamic;
+    vehilcePoolSizes[2] = combinedImageSampler;
+
+    VkDescriptorPoolCreateInfo vehiclePoolInfo{};
+    vehiclePoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    vehiclePoolInfo.poolSizeCount = static_cast<uint32_t>(vehilcePoolSizes.size());
+    vehiclePoolInfo.pPoolSizes = vehilcePoolSizes.data();
+    vehiclePoolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size());
+
+    if (vkCreateDescriptorPool(device, &vehiclePoolInfo, nullptr, &vehicleDescriptor.pool) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create descriptor pool!");
+    }
+
+    std::array<VkDescriptorPoolSize, 2> junctionPoolSizes{};
+    junctionPoolSizes[0] = uniformBuffer;
+    junctionPoolSizes[1] = combinedImageSampler;
+
+    VkDescriptorPoolCreateInfo junctionPoolInfo{};
+    junctionPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    junctionPoolInfo.poolSizeCount = static_cast<uint32_t>(junctionPoolSizes.size());
+    junctionPoolInfo.pPoolSizes = junctionPoolSizes.data();
+    junctionPoolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size());
+
+    if (vkCreateDescriptorPool(device, &junctionPoolInfo, nullptr, &junctionDescriptor.pool) != VK_SUCCESS) {
         throw std::runtime_error("failed to create descriptor pool!");
     }
 }
 
 void Renderer::createDescriptorSets()
 {
-    std::vector<VkDescriptorSetLayout> layouts(swapChainImages.size(), descriptorSetLayout);
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = descriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(swapChainImages.size());
-    allocInfo.pSetLayouts = layouts.data();
+    std::vector<VkDescriptorSetLayout> vehicleLayouts(swapChainImages.size(), vehicleDescriptor.layout);
+  
+    VkDescriptorSetAllocateInfo vehicleAllocInfo{};
+    vehicleAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    vehicleAllocInfo.descriptorPool = vehicleDescriptor.pool;
+    vehicleAllocInfo.descriptorSetCount = static_cast<uint32_t>(swapChainImages.size());
+    vehicleAllocInfo.pSetLayouts = vehicleLayouts.data();
 
-    descriptorSets.resize(swapChainImages.size());
-    if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
+    vehicleDescriptor.set.resize(swapChainImages.size());
+    if (vkAllocateDescriptorSets(device, &vehicleAllocInfo, vehicleDescriptor.set.data()) != VK_SUCCESS) {
+        throw std::runtime_error("failed to allocate descriptor sets!");
+    }
+
+    std::vector<VkDescriptorSetLayout> junctionLayouts(swapChainImages.size(), junctionDescriptor.layout);
+
+    VkDescriptorSetAllocateInfo junctionAllocInfo{};
+    junctionAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    junctionAllocInfo.descriptorPool = junctionDescriptor.pool;
+    junctionAllocInfo.descriptorSetCount = static_cast<uint32_t>(swapChainImages.size());
+    junctionAllocInfo.pSetLayouts = junctionLayouts.data();
+
+    junctionDescriptor.set.resize(swapChainImages.size());
+    if (vkAllocateDescriptorSets(device, &junctionAllocInfo, junctionDescriptor.set.data()) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate descriptor sets!");
     }
 
@@ -777,32 +786,47 @@ void Renderer::createDescriptorSets()
         imageInfo.imageView = textureImageView;
         imageInfo.sampler = textureSampler;
 
-        std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
-        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[0].dstSet = descriptorSets[i];
-        descriptorWrites[0].dstBinding = 0;
-        descriptorWrites[0].dstArrayElement = 0;
-        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrites[0].descriptorCount = 1;
-        descriptorWrites[0].pBufferInfo = &uniformBufferInfo;
+        VkWriteDescriptorSet uniformBuffer{};
+        uniformBuffer.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        uniformBuffer.dstSet = vehicleDescriptor.set[i];
+        uniformBuffer.dstBinding = 0;
+        uniformBuffer.dstArrayElement = 0;
+        uniformBuffer.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        uniformBuffer.descriptorCount = 1;
+        uniformBuffer.pBufferInfo = &uniformBufferInfo;
 
-        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[1].dstSet = descriptorSets[i];
-        descriptorWrites[1].dstBinding = 1;
-        descriptorWrites[1].dstArrayElement = 0;
-        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-        descriptorWrites[1].descriptorCount = 1;
-        descriptorWrites[1].pBufferInfo = &dynamicUniformBufferInfo;
+        VkWriteDescriptorSet uniformBufferDynamic{};
+        uniformBufferDynamic.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        uniformBufferDynamic.dstSet = vehicleDescriptor.set[i];
+        uniformBufferDynamic.dstBinding = 1;
+        uniformBufferDynamic.dstArrayElement = 0;
+        uniformBufferDynamic.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        uniformBufferDynamic.descriptorCount = 1;
+        uniformBufferDynamic.pBufferInfo = &dynamicUniformBufferInfo;
 
-        descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[2].dstSet = descriptorSets[i];
-        descriptorWrites[2].dstBinding = 2;
-        descriptorWrites[2].dstArrayElement = 0;
-        descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptorWrites[2].descriptorCount = 1;
-        descriptorWrites[2].pImageInfo = &imageInfo;
+        VkWriteDescriptorSet combinedImageSampler{};
+        combinedImageSampler.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        combinedImageSampler.dstSet = vehicleDescriptor.set[i];
+        combinedImageSampler.dstBinding = 2;
+        combinedImageSampler.dstArrayElement = 0;
+        combinedImageSampler.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        combinedImageSampler.descriptorCount = 1;
+        combinedImageSampler.pImageInfo = &imageInfo;
 
-        vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+        std::array<VkWriteDescriptorSet, 3> vehicleDescriptorWrites{};
+        vehicleDescriptorWrites[0] = uniformBuffer;
+        vehicleDescriptorWrites[1] = uniformBufferDynamic;
+        vehicleDescriptorWrites[2] = combinedImageSampler;
+
+        vkUpdateDescriptorSets(device, static_cast<uint32_t>(vehicleDescriptorWrites.size()), vehicleDescriptorWrites.data(), 0, nullptr);
+
+        std::array<VkWriteDescriptorSet, 2> junctionDescriptorWrites{};
+        junctionDescriptorWrites[0] = uniformBuffer;
+        junctionDescriptorWrites[0].dstSet = junctionDescriptor.set[i];
+        junctionDescriptorWrites[1] = combinedImageSampler;
+        junctionDescriptorWrites[1].dstSet = junctionDescriptor.set[i];
+
+        vkUpdateDescriptorSets(device, static_cast<uint32_t>(junctionDescriptorWrites.size()), junctionDescriptorWrites.data(), 0, nullptr);
     }
 }
 
@@ -844,14 +868,13 @@ void Renderer::createCommandBuffers()
 
         vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-        vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+        vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vehiclePipeline.pipeline);
 
-        std::vector<VkBuffer> vertexBuffers = { vertexBuffer };
         VkDeviceSize offsets[] = { 0 };
 
-        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers.data(), offsets);
+        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &vehicleBuffers.vertexBuffer, offsets);
 
-        vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindIndexBuffer(commandBuffers[i], vehicleBuffers.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
         int modelOffset = 0;
         int indicesOffset = 0;
@@ -861,14 +884,24 @@ void Renderer::createCommandBuffers()
             for (uint32_t k = 0; k < models[j].modelCount; k++)
             {
                 uint32_t dynamicOffset = (modelOffset + k) * dynamicAlignment;
-                vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 1, &dynamicOffset);
+                vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vehiclePipeline.Layout, 0, 1, &vehicleDescriptor.set[i], 1, &dynamicOffset);
 
-                vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(models[j].indicesCount), 1, indicesOffset, vertexOffset, 0);  // indices count per model, 1, offset to next model, needed?, 0
+                vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(models[j].indicesCount), 1, indicesOffset, vertexOffset, 0);
             }
             modelOffset += models[j].modelCount;
             indicesOffset += models[j].indicesCount;
             vertexOffset += models[j].vertexCount;
         }
+
+        vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, junctionPipeline.pipeline);
+
+        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &junctionBuffers.vertexBuffer, offsets);
+
+        vkCmdBindIndexBuffer(commandBuffers[i], junctionBuffers.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+        vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, junctionPipeline.Layout, 0, 1, &junctionDescriptor.set[i], 0, 0); // create special set for junction
+
+        vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(junctionModelInfo.indicesCount), 1, 0, 0, 0);
 
         vkCmdEndRenderPass(commandBuffers[i]);
 
@@ -983,13 +1016,11 @@ void Renderer::cleanup()
     vkDestroyImage(device, textureImage, nullptr);
     vkFreeMemory(device, textureImageMemory, nullptr);
 
-    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+    vehicleDescriptor.destroyLayout(device);
+    junctionDescriptor.destroyLayout(device);
 
-    vkDestroyBuffer(device, indexBuffer, nullptr);
-    vkFreeMemory(device, indexBufferMemory, nullptr);
-
-    vkDestroyBuffer(device, vertexBuffer, nullptr);
-    vkFreeMemory(device, vertexBufferMemory, nullptr);
+    vehicleBuffers.destroy(device);
+    junctionBuffers.destroy(device);
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
@@ -1275,6 +1306,102 @@ uint32_t Renderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pro
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
+ModelInfo Renderer::loadModel(std::string modelPath, int modelCount, ModelBuffers& modelBuffer)
+{
+    ModelInfo newModel{};
+    newModel.model = modelPath;
+    newModel.modelCount = modelCount;
+
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    std::string warn, err;
+
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, newModel.model.c_str())) {
+        throw std::runtime_error(warn + err);
+    }
+
+    std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+    std::vector<Vertex> tempVertices;
+    std::vector<uint32_t> tempIndices;
+
+    for (const auto& shape : shapes) {
+        for (const auto& index : shape.mesh.indices) {
+            Vertex vertex{};
+
+            vertex.pos = {
+                attrib.vertices[3 * index.vertex_index + 0],
+                attrib.vertices[3 * index.vertex_index + 1],
+                attrib.vertices[3 * index.vertex_index + 2]
+            };
+
+            vertex.texCoord = {
+                attrib.texcoords[2 * index.texcoord_index + 0],
+                1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+            };
+
+            vertex.color = { 1.0f, 1.0f, 1.0f };
+
+            if (uniqueVertices.count(vertex) == 0) {
+                uniqueVertices[vertex] = static_cast<uint32_t>(tempVertices.size());
+                tempVertices.push_back(vertex);
+            }
+
+            tempIndices.push_back(uniqueVertices[vertex]);
+        }
+    }
+    newModel.vertexCount = tempVertices.size();
+    modelBuffer.vertices.insert(modelBuffer.vertices.end(), tempVertices.begin(), tempVertices.end());
+    newModel.indicesCount = tempIndices.size();
+    modelBuffer.indices.insert(modelBuffer.indices.end(), tempIndices.begin(), tempIndices.end());
+
+    return newModel;
+}
+
+void Renderer::createVertexBuffer(ModelBuffers& modelBuffer)
+{
+
+    VkDeviceSize bufferSize = sizeof(modelBuffer.vertices[0]) * modelBuffer.vertices.size();
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+    void* data;
+    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, modelBuffer.vertices.data(), (size_t)bufferSize);
+    vkUnmapMemory(device, stagingBufferMemory);
+
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelBuffer.vertexBuffer, modelBuffer.vertexBufferMemory);
+
+    copyBuffer(stagingBuffer, modelBuffer.vertexBuffer, bufferSize);
+
+    vkDestroyBuffer(device, stagingBuffer, nullptr);
+    vkFreeMemory(device, stagingBufferMemory, nullptr);
+}
+
+void Renderer::createIndexBuffer(ModelBuffers& modelBuffer)
+{
+    VkDeviceSize bufferSize = sizeof(modelBuffer.indices[0]) * modelBuffer.indices.size();
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+    void* data;
+    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, modelBuffer.indices.data(), (size_t)bufferSize);
+    vkUnmapMemory(device, stagingBufferMemory);
+
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelBuffer.indexBuffer, modelBuffer.indexBufferMemory);
+
+    copyBuffer(stagingBuffer, modelBuffer.indexBuffer, bufferSize);
+
+    vkDestroyBuffer(device, stagingBuffer, nullptr);
+    vkFreeMemory(device, stagingBufferMemory, nullptr);
+
+}
+
 void Renderer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -1335,13 +1462,14 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
     // glm::mat4 test = ptr_simulation->routes[0].roadUsers[0]->getPos();
     // ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 15.0f), glm::vec3(test[3].x, test[3].y, test[3].z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-    ubo.view = glm::lookAt(glm::vec3(50.0f, 50.0f, 15.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
+    ubo.model = glm::mat4(1.0f);
+    ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 120.0f), glm::vec3(20.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 200.0f);
     ubo.proj[1][1] *= -1;
 
     void* data;
-    vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
-    memcpy(data, &ubo, sizeof(ubo));
+    vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(UniformBufferObject), 0, &data);
+    memcpy(data, &ubo, sizeof(UniformBufferObject));
     vkUnmapMemory(device, uniformBuffersMemory[currentImage]);
 }
 

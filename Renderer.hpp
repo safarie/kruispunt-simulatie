@@ -52,13 +52,6 @@ const std::vector<const char*> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
-struct ModelInfo {
-    std::string model;
-    int modelCount;
-    uint32_t indicesCount;
-    uint32_t vertexCount;
-};
-
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
     std::optional<uint32_t> presentFamily;
@@ -123,8 +116,57 @@ namespace std {
 }
 
 struct UniformBufferObject {
+    alignas(16) glm::mat4 model;
     alignas(16) glm::mat4 view;
     alignas(16) glm::mat4 proj;
+};
+
+struct graphicsPipeLine {
+    VkPipeline pipeline;
+    VkPipelineLayout Layout;
+
+    void destroy(VkDevice device) {
+        vkDestroyPipeline(device, pipeline, nullptr);
+        vkDestroyPipelineLayout(device, Layout, nullptr);
+    }
+};
+
+struct ModelInfo {
+    std::string model;
+    int modelCount;
+    uint32_t indicesCount;
+    uint32_t vertexCount;
+};
+
+struct ModelBuffers {
+    std::vector<Vertex> vertices;
+    std::vector<uint32_t> indices;
+    VkBuffer vertexBuffer;
+    VkDeviceMemory vertexBufferMemory;
+    VkBuffer indexBuffer;
+    VkDeviceMemory indexBufferMemory;
+
+    void destroy(VkDevice device) {
+        vkDestroyBuffer(device, indexBuffer, nullptr);
+        vkFreeMemory(device, indexBufferMemory, nullptr);
+
+        vkDestroyBuffer(device, vertexBuffer, nullptr);
+        vkFreeMemory(device, vertexBufferMemory, nullptr);
+    };
+};
+
+struct Descriptor {
+    VkDescriptorSetLayout layout;
+    VkDescriptorPool pool;
+    std::vector<VkDescriptorSet> set;
+
+    void destroyPool(VkDevice device) {
+        vkDestroyDescriptorPool(device, pool, nullptr);
+    }
+
+    void destroyLayout(VkDevice device) {
+        vkDestroyDescriptorSetLayout(device, layout, nullptr);
+    }
 };
 
 class Renderer
@@ -149,6 +191,8 @@ private:
         alignas(16) glm::mat4* model = nullptr;
     } dubo;
 
+    ModelInfo junctionModelInfo;
+
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
     VkSurfaceKHR surface;
@@ -168,9 +212,9 @@ private:
     std::vector<VkFramebuffer> swapChainFramebuffers;
 
     VkRenderPass renderPass;
-    VkDescriptorSetLayout descriptorSetLayout;
-    VkPipelineLayout pipelineLayout;
-    VkPipeline graphicsPipeline;
+
+    graphicsPipeLine vehiclePipeline;
+    graphicsPipeLine junctionPipeline;
 
     VkCommandPool commandPool;
 
@@ -183,21 +227,16 @@ private:
     VkDeviceMemory depthImageMemory;
     VkImageView depthImageView;
 
-    std::vector<Vertex> vertices;
-    std::vector<uint32_t> indices;
+    ModelBuffers vehicleBuffers;
+    ModelBuffers junctionBuffers;
 
-    VkBuffer vertexBuffer;
-    VkDeviceMemory vertexBufferMemory;
-    VkBuffer indexBuffer;
-    VkDeviceMemory indexBufferMemory;
+    Descriptor vehicleDescriptor;
+    Descriptor junctionDescriptor;
 
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkBuffer> dynamicUniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     std::vector<VkDeviceMemory> dynamicUniformBuffersMemory;
-
-    VkDescriptorPool descriptorPool;
-    std::vector<VkDescriptorSet> descriptorSets;
 
     std::vector<VkCommandBuffer> commandBuffers;
 
@@ -226,8 +265,8 @@ private:
     void createTextureImageView();
     void createTextureSampler();
     void loadModels();
-    void createVertexBuffer();
-    void createIndexBuffer();
+    void createVertexBuffers();
+    void createIndexBuffers();
     void createUniformBuffers();
     void createDescriptorPool();
     void createDescriptorSets();
@@ -254,6 +293,9 @@ private:
     VkShaderModule createShaderModule(const std::vector<char>& code);
 
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+    ModelInfo loadModel(std::string modelPath, int modelCount, ModelBuffers& modelBuffer);
+    void createVertexBuffer(ModelBuffers& modelBuffer);
+    void createIndexBuffer(ModelBuffers& modelBuffer);
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
