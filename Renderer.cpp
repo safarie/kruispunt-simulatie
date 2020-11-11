@@ -1459,12 +1459,12 @@ void Renderer::prepareDanymicUniformBuffer()
 void Renderer::updateUniformBuffer(uint32_t currentImage) 
 {
     UniformBufferObject ubo{};
-    // glm::mat4 test = ptr_simulation->routes[0].roadUsers[0]->getPos();
-    // ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 15.0f), glm::vec3(test[3].x, test[3].y, test[3].z), glm::vec3(0.0f, 0.0f, 1.0f));
+    glm::mat4 test = ptr_simulation->models[1]->getPos();
+    ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 15.0f), glm::vec3(test[3].x, test[3].y, test[3].z), glm::vec3(0.0f, 0.0f, 1.0f));
 
     ubo.model = glm::mat4(1.0f);
-    ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 120.0f), glm::vec3(20.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 200.0f);
+    //ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 90.0f), glm::vec3(-80.0f, -40.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 300.0f);
     ubo.proj[1][1] *= -1;
 
     void* data;
@@ -1475,13 +1475,10 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
 
 void Renderer::updateDynamicUniformBuffer(uint32_t currentImage)
 {
-    for (Route &route : ptr_simulation->routes)
+    for (IModel* model : ptr_simulation->models)
     {
-        for (IModel *vehicle : route.roadUsers) 
-        {
-            glm::mat4* modelMat = (glm::mat4*)(((uint64_t)dubo.model + (vehicle->getID() * dynamicAlignment)));
-            *modelMat = vehicle->getPos();
-        }
+        glm::mat4* modelMat = (glm::mat4*)(((uint64_t)dubo.model + (model->getID() * dynamicAlignment)));
+        *modelMat = model->getPos();
     }
 
     void* data;

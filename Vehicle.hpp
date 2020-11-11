@@ -5,11 +5,12 @@
 class Vehicle : public IModel
 {
 public:
-	Vehicle(int newID, float offset);
-	float getTime();
-	glm::mat4 getPos();
+	Vehicle(int vehicleID);
 	int getID();
+	float getSpeed();
+	void setSpeed(float Mps);
 
 private:
 	int ID;
+	float speed = 14.0f;
 };

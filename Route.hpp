@@ -1,39 +1,29 @@
 #pragma once
 
-#include "Vehicle.hpp"
-
-#define _USE_MATH_DEFINES
+#include "IModel.hpp"
+#include "ISection.hpp"
 
 #include <vector>
 #include <string>
-#include <math.h>
+
+struct VehicleInfo
+{
+	int ID;
+	int section;
+};
 
 class Route
 {
 public:
-	std::vector<IModel*> roadUsers;	// list of road users currently on this route
-
-	Route(int ID) {
-		routeID = ID;
-
-		// !! if you change size here, check total modelcount in Renderer.cpp (ln 609)
-		for (size_t i = 0; i < 25; i++)
-		{
-			addRoadUser(new Vehicle(i, i * 3.0f));
-		}
-	};
-
+	Route(int routeID, std::vector<IModel*>* ptr_models);
+	void addSection(ISection* section);
+	void addModel(int modelID);
+	int removeModel();
 	void update(float &delta);
 
-	void addRoadUser(Vehicle *user)
-	{
-		roadUsers.push_back(user);
-	}
-
-	void removeRoadUser() {
-	
-	}
-
 private:
-	int routeID;					// route id
+	int ID;
+	std::vector<VehicleInfo> vehicles;
+	std::vector<ISection*> sections;
+	std::vector<IModel*>* models;
 };

@@ -121,7 +121,7 @@ struct UniformBufferObject {
     alignas(16) glm::mat4 proj;
 };
 
-struct graphicsPipeLine {
+struct GraphicsPipeLine {
     VkPipeline pipeline;
     VkPipelineLayout Layout;
 
@@ -213,8 +213,8 @@ private:
 
     VkRenderPass renderPass;
 
-    graphicsPipeLine vehiclePipeline;
-    graphicsPipeLine junctionPipeline;
+    GraphicsPipeLine vehiclePipeline;
+    GraphicsPipeLine junctionPipeline;
 
     VkCommandPool commandPool;
 
