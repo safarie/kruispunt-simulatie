@@ -40,11 +40,9 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-const int OBJECT_INSTANCES = 5;
+const std::string TEXTURE_PATH = "textures/Car.png";
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
-const std::string MODEL_PATH = "models/Car.obj";
-const std::string TEXTURE_PATH = "textures/Car.png";
 
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
@@ -118,8 +116,57 @@ namespace std {
 }
 
 struct UniformBufferObject {
+    alignas(16) glm::mat4 model;
     alignas(16) glm::mat4 view;
     alignas(16) glm::mat4 proj;
+};
+
+struct GraphicsPipeLine {
+    VkPipeline pipeline;
+    VkPipelineLayout Layout;
+
+    void destroy(VkDevice device) {
+        vkDestroyPipeline(device, pipeline, nullptr);
+        vkDestroyPipelineLayout(device, Layout, nullptr);
+    }
+};
+
+struct ModelInfo {
+    std::string model;
+    int modelCount;
+    uint32_t indicesCount;
+    uint32_t vertexCount;
+};
+
+struct ModelBuffers {
+    std::vector<Vertex> vertices;
+    std::vector<uint32_t> indices;
+    VkBuffer vertexBuffer;
+    VkDeviceMemory vertexBufferMemory;
+    VkBuffer indexBuffer;
+    VkDeviceMemory indexBufferMemory;
+
+    void destroy(VkDevice device) {
+        vkDestroyBuffer(device, indexBuffer, nullptr);
+        vkFreeMemory(device, indexBufferMemory, nullptr);
+
+        vkDestroyBuffer(device, vertexBuffer, nullptr);
+        vkFreeMemory(device, vertexBufferMemory, nullptr);
+    };
+};
+
+struct Descriptor {
+    VkDescriptorSetLayout layout;
+    VkDescriptorPool pool;
+    std::vector<VkDescriptorSet> set;
+
+    void destroyPool(VkDevice device) {
+        vkDestroyDescriptorPool(device, pool, nullptr);
+    }
+
+    void destroyLayout(VkDevice device) {
+        vkDestroyDescriptorSetLayout(device, layout, nullptr);
+    }
 };
 
 class Renderer
@@ -129,20 +176,22 @@ public:
 
     void initvulkan();
     void cleanup();
-    void drawFrame(float &delta);
+    void drawFrame();
     VkDevice getDevice();
 
 private:
-    glm::vec3 rotations[OBJECT_INSTANCES];
-    glm::vec3 rotationSpeeds[OBJECT_INSTANCES];
+    int totalModelInstances = 0;
+    std::vector<ModelInfo> models;
+
     std::shared_ptr<Window> ptr_window;
     std::shared_ptr<Simulation> ptr_simulation;
     size_t dynamicAlignment;
-    float cars[OBJECT_INSTANCES] = {};
 
     struct DynamicUniformBufferObject {
         alignas(16) glm::mat4* model = nullptr;
     } dubo;
+
+    ModelInfo junctionModelInfo;
 
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
@@ -163,9 +212,9 @@ private:
     std::vector<VkFramebuffer> swapChainFramebuffers;
 
     VkRenderPass renderPass;
-    VkDescriptorSetLayout descriptorSetLayout;
-    VkPipelineLayout pipelineLayout;
-    VkPipeline graphicsPipeline;
+
+    GraphicsPipeLine vehiclePipeline;
+    GraphicsPipeLine junctionPipeline;
 
     VkCommandPool commandPool;
 
@@ -178,21 +227,16 @@ private:
     VkDeviceMemory depthImageMemory;
     VkImageView depthImageView;
 
-    std::vector<Vertex> vertices;
-    std::vector<uint32_t> indices;
+    ModelBuffers vehicleBuffers;
+    ModelBuffers junctionBuffers;
 
-    VkBuffer vertexBuffer;
-    VkDeviceMemory vertexBufferMemory;
-    VkBuffer indexBuffer;
-    VkDeviceMemory indexBufferMemory;
+    Descriptor vehicleDescriptor;
+    Descriptor junctionDescriptor;
 
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkBuffer> dynamicUniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     std::vector<VkDeviceMemory> dynamicUniformBuffersMemory;
-
-    VkDescriptorPool descriptorPool;
-    std::vector<VkDescriptorSet> descriptorSets;
 
     std::vector<VkCommandBuffer> commandBuffers;
 
@@ -220,9 +264,9 @@ private:
     void createTextureImage();
     void createTextureImageView();
     void createTextureSampler();
-    void loadModel();
-    void createVertexBuffer();
-    void createIndexBuffer();
+    void loadModels();
+    void createVertexBuffers();
+    void createIndexBuffers();
     void createUniformBuffers();
     void createDescriptorPool();
     void createDescriptorSets();
@@ -249,13 +293,15 @@ private:
     VkShaderModule createShaderModule(const std::vector<char>& code);
 
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+    ModelInfo loadModel(std::string modelPath, int modelCount, ModelBuffers& modelBuffer);
+    void createVertexBuffer(ModelBuffers& modelBuffer);
+    void createIndexBuffer(ModelBuffers& modelBuffer);
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
     void prepareDanymicUniformBuffer();
     void updateUniformBuffer(uint32_t currentImage);
-    void updateDynamicUniformBuffer(uint32_t currentImage, float &delta);
-    void spawnModels();
+    void updateDynamicUniformBuffer(uint32_t currentImage);
 
     void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
     VkCommandBuffer beginSingleTimeCommands();

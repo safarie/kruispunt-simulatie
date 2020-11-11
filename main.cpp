@@ -1,9 +1,6 @@
-#include <memory>
-
 #include "Simulation.hpp"
 #include "Renderer.hpp"
 #include "Window.hpp"
-
 #include "Socket.hpp"
 
 int main()
@@ -13,8 +10,9 @@ int main()
     std::shared_ptr<Renderer> ptr_renderer(new Renderer(ptr_window, ptr_simulation));
     Socket socket;
 
-    bool test = true;
+    bool connected = true;
     float previousTime = 0.0f;
+    float frameTime = 0.0f;
 
     //testing sockets
     socket.Connect();
@@ -32,22 +30,31 @@ int main()
     while (!glfwWindowShouldClose(ptr_window->get()))
     {
         static auto startTime = std::chrono::high_resolution_clock::now();
-
         auto currentTime = std::chrono::high_resolution_clock::now();
         float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
         float delta = time - previousTime;
         previousTime = time;
 
         glfwPollEvents();
-        if (test)
-            test = socket.Reciving();
-        ptr_simulation->Update(delta);
-        ptr_simulation->LateUpdate(delta);
-        ptr_renderer->drawFrame(delta);
+        if (connected)
+            connected = socket.Reciving();
+
+        frameTime += delta;
+        if (frameTime <= 1.0f / 60.0f) {
+            continue;
+        }
+
+        ptr_simulation->Update(frameTime);
+        ptr_simulation->LateUpdate(frameTime);    
+        ptr_renderer->drawFrame();
+
+        frameTime = 0.0f;
     }
+
+    // wait till current frame is done
     vkDeviceWaitIdle(ptr_renderer->getDevice());
 
-    // 4. cleanup
+    // 5. cleanup
     socket.Close();
     ptr_renderer->cleanup();
     ptr_renderer.reset();

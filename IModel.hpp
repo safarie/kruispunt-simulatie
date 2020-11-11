@@ -24,12 +24,20 @@ public:
 		isMoving = false;
 	}
 
-	virtual float getTime() = 0;
-	virtual glm::mat4 getPos() = 0;
+	float getTime() {
+		return time;
+	}
+
+	glm::mat4 getPos() {
+		return position;
+	}
+
 	virtual int getID() = 0;
+	virtual float getSpeed() = 0;
+	virtual void setSpeed(float Mps) = 0;
 
 protected:
 	bool isMoving = true;
 	float time = 0.0f;
-	glm::mat4 position = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -15.0f));
+	glm::mat4 position = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -10.0f));
 };
