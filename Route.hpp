@@ -16,7 +16,7 @@ class Route
 {
 public:
 	Route(int routeID, std::vector<IModel*>* ptr_models);
-	void addSection(ISection* section);
+	void addSection(ISection *section);
 	void addModel(int modelID);
 	int removeModel();
 	void update(float &delta);

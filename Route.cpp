@@ -1,14 +1,15 @@
 #include "Route.hpp"
-#include "Simulation.hpp"
 
 Route::Route(int routeID, std::vector<IModel*>* ptr_models) {
     ID = routeID;
     models = ptr_models;
 }
+
 void Route::addSection(ISection* section)
 {
     sections.push_back(section);
 }
+
 void Route::addModel(int modelID)
 {
     VehicleInfo newVehicle{};
