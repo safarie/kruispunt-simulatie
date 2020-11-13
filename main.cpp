@@ -22,12 +22,12 @@ int main()
     // 2. initialize vulkan
     ptr_renderer->initvulkan();
 
-    // 3. sockets
+    // 3. initialize simulator
+    ptr_simulation->InitSimulator();
+
+    // 4. sockets
     connected = ptr_socket->Connect();
     std::thread t1(&Socket::Receiving, ptr_socket);
-
-    // 4. initialize simulator
-    ptr_simulation->InitSimulator();
 
     // 5. main loop
     while (!glfwWindowShouldClose(ptr_window->get()))
@@ -60,6 +60,7 @@ int main()
     t1.join();
 
     // 6. cleanup
+    ptr_socket.reset();
     ptr_renderer->cleanup();
     ptr_renderer.reset();
     ptr_simulation.reset();

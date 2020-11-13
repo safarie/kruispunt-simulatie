@@ -12,5 +12,5 @@ public:
 
 private:
 	int ID;
-	float speed = 14.0f;
+	float speed = 7.5f;
 };

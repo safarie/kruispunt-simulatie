@@ -55,26 +55,23 @@ void Socket::Receiving()
 		}
 
 		printf("%s\n", buffer);
-		ptr_simulation->updateTrafficLights(getTrafficLights());
+		updateTrafficLights();
 	};
 }
 
-std::vector<bool> Socket::getTrafficLights()
+void Socket::updateTrafficLights()
 {
-	std::vector<bool> input(trafficLightNames.size());
+	std::copy(buffer + 4, buffer + (sizeof(buffer) / sizeof(buffer[0])), buffer + 0); //remove header
+
 	rapidjson::Document doc;
-
-	std::copy(buffer + 4, buffer + (sizeof(buffer) / sizeof(buffer[0])), buffer + 0);
-
 	doc.Parse(buffer);
 
-	for (size_t i = 0; i < trafficLightNames.size(); i++)
+	for (size_t i = 0; i < ptr_simulation->trafficLights.size(); i++)
 	{
-		rapidjson::Value& light = doc[trafficLightNames[i].c_str()];
-		input[i] = light.GetInt();
+		rapidjson::Value& light = doc[ptr_simulation->trafficLights[i].ID.c_str()];
+		ptr_simulation->trafficLights[i].state = light.GetInt();
+		//std::cout << ptr_simulation->trafficLights[i].state << std::endl;
 	}
-
-	return input;
 }
 
 void Socket::Close()

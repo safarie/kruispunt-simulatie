@@ -13,13 +13,13 @@ class Simulation
 public:
     std::vector<Route> routes;
     std::vector<IModel*> models;
-    std::vector<bool> trafficLights;
+    std::vector<TrafficLichtInfo> trafficLights;
 
     void InitSimulator();
-    void InitRoutes();
-    void updateTrafficLights(std::vector<bool> trafficLights);
     void Update(float& delta);
     void LateUpdate(float& delta);
+    void InitTrafficLights();
+    void InitRoutes();
 
 private:
 };
