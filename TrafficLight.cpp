@@ -2,7 +2,6 @@
 
 TrafficLight::TrafficLight(glm::vec3 startPos, int direction, float length, int trafficLight, std::vector<TrafficLichtInfo>* ptr_trafficLights)
 {
-	this->direction = direction;
 	this->length = length;
 	this->ID = trafficLight;
 	this->trafficLights = ptr_trafficLights;

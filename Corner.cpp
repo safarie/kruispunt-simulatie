@@ -2,7 +2,6 @@
 
 Corner::Corner(glm::vec3 startPos, int direction, float radius, int degree)
 {
-    this->direction = direction;
     this->radius = radius;
     this->degree = degree;
 

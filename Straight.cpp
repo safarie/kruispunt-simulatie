@@ -2,7 +2,6 @@
 
 Straight::Straight(glm::vec3 startPos, int direction, float length)
 {
-	this->direction = direction;
 	this->length = length;
 
 	start = glm::translate(glm::mat4(1.0), startPos);

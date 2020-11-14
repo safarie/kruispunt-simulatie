@@ -5,6 +5,7 @@
 #include "TrafficLight.hpp"
 #include "Straight.hpp"
 #include "Corner.hpp"
+#include "Transition.hpp"
 #include "End.hpp"
 #include <vector>
 
