@@ -658,9 +658,9 @@ void Renderer::createTextureSampler()
 
 void Renderer::loadModels()
 {
-    for (auto& m : ptr_simulation->modelInfo) {
-        totalModelInstances += m.modelCount;
+    for (auto m : ptr_simulation->modelInfo) {
         loadModel(&m, vehicleBuffers);
+        totalModelInstances += m.modelCount;
     }
 
     junctionModelInfo.model = "models/Road.obj";
@@ -1454,7 +1454,7 @@ void Renderer::prepareDanymicUniformBuffer()
 void Renderer::updateUniformBuffer(uint32_t currentImage) 
 {
     UniformBufferObject ubo{};
-    glm::mat4 test = ptr_simulation->models[15]->getPos();
+    glm::mat4 test = ptr_simulation->models[1]->getPos();
     ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 15.0f), glm::vec3(test[3].x, test[3].y, test[3].z), glm::vec3(0.0f, 0.0f, 1.0f));
 
     ubo.model = glm::mat4(1.0f);

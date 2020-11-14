@@ -22,17 +22,17 @@ void Simulation::LateUpdate(float& delta)
 
 void Simulation::InitTraffic()
 {
-	ModelInfo busses{};
-	busses.model = "models/Bus.obj";
-	busses.modelCount = 5;
-	busses.collisionRadius = 4.5f;
-	modelInfo.push_back(busses);
-
 	ModelInfo cars{};
 	cars.model = "models/Car_new.obj";
 	cars.modelCount = 20;
-	cars.collisionRadius = 2.0f;
+	cars.collisionRadius = 2.5f;
 	modelInfo.push_back(cars);
+
+	ModelInfo busses{};
+	busses.model = "models/Bus.obj";
+	busses.modelCount = 5;
+	busses.collisionRadius = 5.0f;
+	modelInfo.push_back(busses);
 	
 	int totalModelCount = 0;
 	for (auto& mi : modelInfo) {
@@ -77,7 +77,8 @@ void Simulation::InitRoutes()
 	route0.addSection(new Corner(glm::vec3(77.0f, -7.25f, 0.0f), -180, 16.25f, 90.0f));
 	route0.addSection(new Straight(glm::vec3(93.25f, 9.0f, 0.0f), -90, 69.0f));
 	route0.addSection(new End(glm::vec3(0.0f,0.0f,-10.0f), 0));
-	route0.addModel(15);
+	route0.addModel(1);
+	route0.addModel(0);
 	
 	routes.push_back(route0);
 }
