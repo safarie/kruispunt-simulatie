@@ -24,6 +24,10 @@ public:
 		isMoving = false;
 	}
 
+	float getColRad() {
+		return collisionRadius;
+	}
+
 	float getTime() {
 		return time;
 	}
@@ -37,6 +41,7 @@ public:
 	virtual void setSpeed(float Mps) = 0;
 
 protected:
+	float collisionRadius = 0.0f;
 	bool isMoving = true;
 	float time = 0.0f;
 	glm::mat4 position = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -10.0f));

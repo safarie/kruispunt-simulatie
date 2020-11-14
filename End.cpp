@@ -8,8 +8,7 @@ End::End(glm::vec3 end, int direction)
 
 int End::update(float& delta, IModel* model, int section)
 {
-	float reset = 0.0f;
+	model->update(delta, start);
 	model->resetTime();
-	model->update(reset, start);
 	return -1;
 }

@@ -5,19 +5,22 @@
 
 #include <vector>
 #include <string>
+#include <cmath>
 
 struct VehicleInfo
 {
 	int ID;
 	int section;
+	int radius;
 };
 
 class Route
 {
 public:
 	Route(int routeID, std::vector<IModel*>* ptr_models);
-	void addSection(ISection* section);
+	void addSection(ISection *section);
 	void addModel(int modelID);
+	void addModel(int modelID, int startSection);
 	int removeModel();
 	void update(float &delta);
 

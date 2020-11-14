@@ -658,14 +658,29 @@ void Renderer::createTextureSampler()
 
 void Renderer::loadModels()
 {
-    // !! if you change model counts here, change i (in the for loop) in Route.hpp (ln 19)
-    models.push_back(loadModel("models/Bus.obj", 10, vehicleBuffers));
-    models.push_back(loadModel("models/Car_new.obj", 15, vehicleBuffers));
+    ModelInfo cars{};
+    cars.model = "models/Car_new.obj";
+    cars.modelCount = 20;
+    cars.collisionRadius = 2.5f;
+    models.push_back(cars);
 
-    for (auto& m : models)
+    ModelInfo busses{};
+    busses.model = "models/Bus.obj";
+    busses.modelCount = 5;
+    busses.collisionRadius = 5.0f;
+    models.push_back(busses);
+
+    for (auto &m : models) {
+        loadModel(&m, vehicleBuffers);
         totalModelInstances += m.modelCount;
+    }
 
-    junctionModelInfo = loadModel("models/Road.obj", 1, junctionBuffers);
+    ptr_simulation->modelInfo = &models;
+
+    junctionModelInfo.model = "models/Road.obj";
+    junctionModelInfo.modelCount = 1;
+
+    loadModel(&junctionModelInfo, junctionBuffers);
 }
 
 void Renderer::createVertexBuffers()
@@ -1306,18 +1321,14 @@ uint32_t Renderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pro
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-ModelInfo Renderer::loadModel(std::string modelPath, int modelCount, ModelBuffers& modelBuffer)
+void Renderer::loadModel(ModelInfo* model, ModelBuffers& modelBuffer)
 {
-    ModelInfo newModel{};
-    newModel.model = modelPath;
-    newModel.modelCount = modelCount;
-
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
     std::string warn, err;
 
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, newModel.model.c_str())) {
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, model->model.c_str())) {
         throw std::runtime_error(warn + err);
     }
 
@@ -1350,12 +1361,10 @@ ModelInfo Renderer::loadModel(std::string modelPath, int modelCount, ModelBuffer
             tempIndices.push_back(uniqueVertices[vertex]);
         }
     }
-    newModel.vertexCount = tempVertices.size();
+    model->vertexCount = tempVertices.size();
     modelBuffer.vertices.insert(modelBuffer.vertices.end(), tempVertices.begin(), tempVertices.end());
-    newModel.indicesCount = tempIndices.size();
-    modelBuffer.indices.insert(modelBuffer.indices.end(), tempIndices.begin(), tempIndices.end());
-
-    return newModel;
+    model->indicesCount = tempIndices.size();
+    modelBuffer.indices.insert(modelBuffer.indices.end(), tempIndices.begin(), tempIndices.end());;
 }
 
 void Renderer::createVertexBuffer(ModelBuffers& modelBuffer)
@@ -1459,12 +1468,12 @@ void Renderer::prepareDanymicUniformBuffer()
 void Renderer::updateUniformBuffer(uint32_t currentImage) 
 {
     UniformBufferObject ubo{};
-    glm::mat4 test = ptr_simulation->models[1]->getPos();
-    ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 15.0f), glm::vec3(test[3].x, test[3].y, test[3].z), glm::vec3(0.0f, 0.0f, 1.0f));
+    //glm::mat4 test = ptr_simulation->models[1]->getPos();
+    //ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 15.0f), glm::vec3(test[3].x, test[3].y, test[3].z), glm::vec3(0.0f, 0.0f, 1.0f));
 
     ubo.model = glm::mat4(1.0f);
-    //ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 90.0f), glm::vec3(-80.0f, -40.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 300.0f);
+    ubo.view = glm::lookAt(glm::vec3(0.0f, 50.0f, 200.0f), glm::vec3(-20.0f, -10.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 500.0f);
     ubo.proj[1][1] *= -1;
 
     void* data;
