@@ -5,7 +5,7 @@
 class Vehicle : public IModel
 {
 public:
-	Vehicle(int vehicleID);
+	Vehicle(int vehicleID, float collision);
 	int getID();
 	float getSpeed();
 	void setSpeed(float Mps);

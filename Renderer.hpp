@@ -32,7 +32,6 @@
 
 #include <random>
 #include <math.h>
-#include "Route.hpp"
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -131,13 +130,6 @@ struct GraphicsPipeLine {
     }
 };
 
-struct ModelInfo {
-    std::string model;
-    int modelCount;
-    uint32_t indicesCount;
-    uint32_t vertexCount;
-};
-
 struct ModelBuffers {
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
@@ -181,7 +173,6 @@ public:
 
 private:
     int totalModelInstances = 0;
-    std::vector<ModelInfo> models;
 
     std::shared_ptr<Window> ptr_window;
     std::shared_ptr<Simulation> ptr_simulation;
@@ -293,7 +284,7 @@ private:
     VkShaderModule createShaderModule(const std::vector<char>& code);
 
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-    ModelInfo loadModel(std::string modelPath, int modelCount, ModelBuffers& modelBuffer);
+    void loadModel(ModelInfo* model, ModelBuffers& modelBuffer);
     void createVertexBuffer(ModelBuffers& modelBuffer);
     void createIndexBuffer(ModelBuffers& modelBuffer);
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);

@@ -658,14 +658,15 @@ void Renderer::createTextureSampler()
 
 void Renderer::loadModels()
 {
-    // !! if you change model counts here, change i (in the for loop) in Route.hpp (ln 19)
-    models.push_back(loadModel("models/Bus.obj", 10, vehicleBuffers));
-    models.push_back(loadModel("models/Car_new.obj", 15, vehicleBuffers));
-
-    for (auto& m : models)
+    for (auto& m : ptr_simulation->modelInfo) {
         totalModelInstances += m.modelCount;
+        loadModel(&m, vehicleBuffers);
+    }
 
-    junctionModelInfo = loadModel("models/Road.obj", 1, junctionBuffers);
+    junctionModelInfo.model = "models/Road.obj";
+    junctionModelInfo.modelCount = 1;
+
+    loadModel(&junctionModelInfo, junctionBuffers);
 }
 
 void Renderer::createVertexBuffers()
@@ -879,18 +880,18 @@ void Renderer::createCommandBuffers()
         int modelOffset = 0;
         int indicesOffset = 0;
         int vertexOffset = 0;
-        for (size_t j = 0; j < models.size(); j++)
+        for (size_t j = 0; j < ptr_simulation->modelInfo.size(); j++)
         {
-            for (uint32_t k = 0; k < models[j].modelCount; k++)
+            for (uint32_t k = 0; k < ptr_simulation->modelInfo[j].modelCount; k++)
             {
                 uint32_t dynamicOffset = (modelOffset + k) * dynamicAlignment;
                 vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vehiclePipeline.Layout, 0, 1, &vehicleDescriptor.set[i], 1, &dynamicOffset);
 
-                vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(models[j].indicesCount), 1, indicesOffset, vertexOffset, 0);
+                vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(ptr_simulation->modelInfo[j].indicesCount), 1, indicesOffset, vertexOffset, 0);
             }
-            modelOffset += models[j].modelCount;
-            indicesOffset += models[j].indicesCount;
-            vertexOffset += models[j].vertexCount;
+            modelOffset += ptr_simulation->modelInfo[j].modelCount;
+            indicesOffset += ptr_simulation->modelInfo[j].indicesCount;
+            vertexOffset += ptr_simulation->modelInfo[j].vertexCount;
         }
 
         vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, junctionPipeline.pipeline);
@@ -1306,18 +1307,14 @@ uint32_t Renderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pro
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-ModelInfo Renderer::loadModel(std::string modelPath, int modelCount, ModelBuffers& modelBuffer)
+void Renderer::loadModel(ModelInfo* model, ModelBuffers& modelBuffer)
 {
-    ModelInfo newModel{};
-    newModel.model = modelPath;
-    newModel.modelCount = modelCount;
-
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
     std::string warn, err;
 
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, newModel.model.c_str())) {
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, model->model.c_str())) {
         throw std::runtime_error(warn + err);
     }
 
@@ -1350,12 +1347,10 @@ ModelInfo Renderer::loadModel(std::string modelPath, int modelCount, ModelBuffer
             tempIndices.push_back(uniqueVertices[vertex]);
         }
     }
-    newModel.vertexCount = tempVertices.size();
+    model->vertexCount = tempVertices.size();
     modelBuffer.vertices.insert(modelBuffer.vertices.end(), tempVertices.begin(), tempVertices.end());
-    newModel.indicesCount = tempIndices.size();
-    modelBuffer.indices.insert(modelBuffer.indices.end(), tempIndices.begin(), tempIndices.end());
-
-    return newModel;
+    model->indicesCount = tempIndices.size();
+    modelBuffer.indices.insert(modelBuffer.indices.end(), tempIndices.begin(), tempIndices.end());;
 }
 
 void Renderer::createVertexBuffer(ModelBuffers& modelBuffer)

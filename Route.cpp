@@ -12,11 +12,22 @@ void Route::addSection(ISection* section)
 
 void Route::addModel(int modelID)
 {
-    VehicleInfo newVehicle{};
-    newVehicle.ID = modelID;
-    newVehicle.section = 0;
+    VehicleInfo vehicle{};
+    vehicle.ID = modelID;
+    vehicle.section = 0;
+    vehicle.radius = models->at(modelID)->getColRad();
 
-    vehicles.push_back(newVehicle);
+    vehicles.push_back(vehicle);
+}
+
+void Route::addModel(int modelID, int startSection)
+{
+    VehicleInfo vehicle{};
+    vehicle.ID = modelID;
+    vehicle.section = startSection;
+    vehicle.radius = models->at(modelID)->getColRad();
+
+    vehicles.push_back(vehicle);
 }
 
 int Route::removeModel()

@@ -2,16 +2,10 @@
 
 void Simulation::InitSimulator()
 {
-	for (size_t i = 0; i < 25; i++)		// !! if you change size here, check total modelcount in Renderer.cpp (ln 609)
-	{
-		models.push_back(new Vehicle(i));
-	}
-
+	InitTraffic();
 	InitTrafficLights();
 	InitRoutes();
 }
-
-
 
 void Simulation::Update(float &delta) 
 {
@@ -24,6 +18,30 @@ void Simulation::Update(float &delta)
 void Simulation::LateUpdate(float& delta) 
 { 
 
+}
+
+void Simulation::InitTraffic()
+{
+	ModelInfo busses{};
+	busses.model = "models/Bus.obj";
+	busses.modelCount = 5;
+	busses.collisionRadius = 4.5f;
+	modelInfo.push_back(busses);
+
+	ModelInfo cars{};
+	cars.model = "models/Car_new.obj";
+	cars.modelCount = 20;
+	cars.collisionRadius = 2.0f;
+	modelInfo.push_back(cars);
+	
+	int totalModelCount = 0;
+	for (auto& mi : modelInfo) {
+		for (uint32_t i = 0; i < (totalModelCount + mi.modelCount); i++)
+		{
+			models.push_back(new Vehicle(i, mi.collisionRadius));
+		}
+		totalModelCount += mi.modelCount;
+	}
 }
 
 void Simulation::InitTrafficLights()
@@ -47,13 +65,15 @@ void Simulation::InitTrafficLights()
 	}
 }
 
-void Simulation::InitRoutes() 
+void Simulation::InitRoutes()
 {
+	// (x y z). degrees
 	Route route0(0, &models);
-	//route1.addSection(new Straight(glm::vec3(-71.75f, -80.0f, 0.0f), -90.0f, 50.0f));
-	route0.addSection(new TrafficLight(glm::vec3(-71.75f, -80.0f, 0.0f), -90, 50.0f, 11, &trafficLights)); // A2-1
+	route0.addSection(new Straight(glm::vec3(-71.75f, -80.0f, 0.0f), -90.0f, 48.0f));
+	route0.addSection(new TrafficLight(glm::vec3(-71.75f, -32.0f, 0.0f), -90, 2.0f, 0, &trafficLights)); // A1-1
 	route0.addSection(new Corner(glm::vec3(-71.75f, -30.0f, 0.0f), -90, 22.75f, -90.0f));
-	route0.addSection(new Straight(glm::vec3(-49.0f, -7.25f, 0.0f), -180, 126.0f));
+	route0.addSection(new Straight(glm::vec3(-49.0f, -7.25f, 0.0f), -180, 124.0f));
+	route0.addSection(new TrafficLight(glm::vec3(75.0f, -7.25f, 0.0f), -180, 2.0f, 48, &trafficLights)); // A6-3
 	route0.addSection(new Corner(glm::vec3(77.0f, -7.25f, 0.0f), -180, 16.25f, 90.0f));
 	route0.addSection(new Straight(glm::vec3(93.25f, 9.0f, 0.0f), -90, 69.0f));
 	route0.addSection(new End(glm::vec3(0.0f,0.0f,-10.0f), 0));
