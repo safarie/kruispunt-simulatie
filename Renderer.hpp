@@ -183,6 +183,7 @@ private:
     } dubo;
 
     ModelInfo junctionModelInfo;
+    std::vector<ModelInfo> models;
 
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;

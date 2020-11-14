@@ -23,7 +23,7 @@ public:
     std::vector<Route> routes;
     std::vector<IModel*> models;
     std::vector<TrafficLichtInfo> trafficLights;
-    std::vector<ModelInfo> modelInfo;
+    std::vector<ModelInfo>* modelInfo;
 
     void InitSimulator();
     void Update(float& delta);

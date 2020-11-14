@@ -19,11 +19,11 @@ int main()
     // 1. initialize window
     ptr_window->initWindow();
 
-    // 2. initialize simulator
-    ptr_simulation->InitSimulator();
-
-    // 3. initialize vulkan
+    // 2. initialize vulkan
     ptr_renderer->initvulkan();
+
+    // 3. initialize simulator
+    ptr_simulation->InitSimulator();
 
     // 4. sockets
     connected = ptr_socket->Connect();

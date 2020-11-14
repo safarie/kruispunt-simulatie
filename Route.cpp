@@ -53,8 +53,8 @@ void Route::update(float &delta)
 
         IModel* precedingModel = models->at(vehicles[i - 1].ID);
 
-        float dx = fabs(model->getPos()[3].x) - fabs(precedingModel->getPos()[3].x);
-        float dy = fabs(model->getPos()[3].y) - fabs(precedingModel->getPos()[3].y);
+        float dx = model->getPos()[3].x - precedingModel->getPos()[3].x;
+        float dy = model->getPos()[3].y - precedingModel->getPos()[3].y;
         float distance = std::sqrtf(dx * dx + dy * dy);
 
         if (distance < model->getColRad() + precedingModel->getColRad())

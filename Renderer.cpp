@@ -658,10 +658,24 @@ void Renderer::createTextureSampler()
 
 void Renderer::loadModels()
 {
-    for (auto m : ptr_simulation->modelInfo) {
+    ModelInfo cars{};
+    cars.model = "models/Car_new.obj";
+    cars.modelCount = 20;
+    cars.collisionRadius = 2.5f;
+    models.push_back(cars);
+
+    ModelInfo busses{};
+    busses.model = "models/Bus.obj";
+    busses.modelCount = 5;
+    busses.collisionRadius = 5.0f;
+    models.push_back(busses);
+
+    for (auto &m : models) {
         loadModel(&m, vehicleBuffers);
         totalModelInstances += m.modelCount;
     }
+
+    ptr_simulation->modelInfo = &models;
 
     junctionModelInfo.model = "models/Road.obj";
     junctionModelInfo.modelCount = 1;
@@ -880,18 +894,18 @@ void Renderer::createCommandBuffers()
         int modelOffset = 0;
         int indicesOffset = 0;
         int vertexOffset = 0;
-        for (size_t j = 0; j < ptr_simulation->modelInfo.size(); j++)
+        for (size_t j = 0; j < models.size(); j++)
         {
-            for (uint32_t k = 0; k < ptr_simulation->modelInfo[j].modelCount; k++)
+            for (uint32_t k = 0; k < models[j].modelCount; k++)
             {
                 uint32_t dynamicOffset = (modelOffset + k) * dynamicAlignment;
                 vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vehiclePipeline.Layout, 0, 1, &vehicleDescriptor.set[i], 1, &dynamicOffset);
 
-                vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(ptr_simulation->modelInfo[j].indicesCount), 1, indicesOffset, vertexOffset, 0);
+                vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(models[j].indicesCount), 1, indicesOffset, vertexOffset, 0);
             }
-            modelOffset += ptr_simulation->modelInfo[j].modelCount;
-            indicesOffset += ptr_simulation->modelInfo[j].indicesCount;
-            vertexOffset += ptr_simulation->modelInfo[j].vertexCount;
+            modelOffset += models[j].modelCount;
+            indicesOffset += models[j].indicesCount;
+            vertexOffset += models[j].vertexCount;
         }
 
         vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, junctionPipeline.pipeline);
@@ -1454,12 +1468,12 @@ void Renderer::prepareDanymicUniformBuffer()
 void Renderer::updateUniformBuffer(uint32_t currentImage) 
 {
     UniformBufferObject ubo{};
-    glm::mat4 test = ptr_simulation->models[1]->getPos();
-    ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 15.0f), glm::vec3(test[3].x, test[3].y, test[3].z), glm::vec3(0.0f, 0.0f, 1.0f));
+    //glm::mat4 test = ptr_simulation->models[1]->getPos();
+    //ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 15.0f), glm::vec3(test[3].x, test[3].y, test[3].z), glm::vec3(0.0f, 0.0f, 1.0f));
 
     ubo.model = glm::mat4(1.0f);
-    //ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 90.0f), glm::vec3(-80.0f, -40.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 300.0f);
+    ubo.view = glm::lookAt(glm::vec3(0.0f, 50.0f, 200.0f), glm::vec3(-20.0f, -10.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 500.0f);
     ubo.proj[1][1] *= -1;
 
     void* data;

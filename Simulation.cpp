@@ -21,22 +21,10 @@ void Simulation::LateUpdate(float& delta)
 }
 
 void Simulation::InitTraffic()
-{
-	ModelInfo cars{};
-	cars.model = "models/Car_new.obj";
-	cars.modelCount = 20;
-	cars.collisionRadius = 2.5f;
-	modelInfo.push_back(cars);
-
-	ModelInfo busses{};
-	busses.model = "models/Bus.obj";
-	busses.modelCount = 5;
-	busses.collisionRadius = 5.0f;
-	modelInfo.push_back(busses);
-	
+{	
 	int totalModelCount = 0;
-	for (auto& mi : modelInfo) {
-		for (uint32_t i = 0; i < (totalModelCount + mi.modelCount); i++)
+	for (auto& mi : *modelInfo) {
+		for (uint32_t i = totalModelCount; i < mi.modelCount + totalModelCount; i++)
 		{
 			models.push_back(new Vehicle(i, mi.collisionRadius));
 		}
@@ -78,6 +66,27 @@ void Simulation::InitRoutes()
 	route0.addSection(new Straight(glm::vec3(93.25f, 9.0f, 0.0f), -90, 69.0f));
 	route0.addSection(new End(glm::vec3(0.0f,0.0f,-10.0f), 0));
 	route0.addModel(1);
+	route0.addModel(2);
+	route0.addModel(3);
+	route0.addModel(4);
+	route0.addModel(21);
+	route0.addModel(5);
+	route0.addModel(6);
+	route0.addModel(7);
+	route0.addModel(8);
+	route0.addModel(22);
+	route0.addModel(9);
+	route0.addModel(10);
+	route0.addModel(11);
+	route0.addModel(12);
+	route0.addModel(23);
+	route0.addModel(14);
+	route0.addModel(15);
+	route0.addModel(16);
+	route0.addModel(17);
+	route0.addModel(24);
+	route0.addModel(18);
+	route0.addModel(19);
 	route0.addModel(0);
 	
 	routes.push_back(route0);
