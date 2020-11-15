@@ -18,9 +18,9 @@ int TrafficLight::update(float& delta, IModel* model, int section)
 		*modelMat = start;
 	}
 
-	// std::cout << trafficLights->at(ID).state << std::endl;
+	//std::cout << trafficLights->at(ID).state << std::endl;
 
-	if (!trafficLights->at(ID).state) {
+	if (trafficLights->at(ID).state == 0) {
 		model->stop();
 		return section;
 	}

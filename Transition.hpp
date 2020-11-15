@@ -3,7 +3,6 @@
 #include "ISection.hpp"
 #include "Route.hpp"
 #include <random>
-#include <iostream>
 
 class Transition : public ISection
 {

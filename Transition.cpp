@@ -39,7 +39,7 @@ int Transition::Transition2(IModel* model)
     std::default_random_engine generator;
     std::uniform_int_distribution<int> distribution(1, 10);
     int rand = distribution(generator);
-    std::cout << rand << std::endl;
+
     rand < 6 ? transition1->addModel(model->getID()) : transition2->addModel(model->getID());
     return -1;
 }

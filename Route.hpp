@@ -7,6 +7,8 @@
 #include <string>
 #include <cmath>
 
+#include <iostream>
+
 struct VehicleInfo
 {
 	int ID;
@@ -21,7 +23,7 @@ public:
 	void addSection(ISection *section);
 	void addModel(int modelID);
 	void addModel(int modelID, int startSection);
-	int removeModel();
+	int removeModel(int ID);
 	void update(float &delta);
 
 private:
