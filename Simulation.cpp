@@ -56,16 +56,19 @@ void Simulation::InitTrafficLights()
 void Simulation::InitRoutes()
 {
 	// (x y z). degrees
-	// routeIn 0-16, routeOut 17-24, routeCon 25-32
+	// routeIn 0-16, routeOut 17-24, routeCon 25-32, transitions 33-48
 
 	// starting routes
 	Route routeIn0(0, &models);
 	routeIn0.addSection(new Straight(glm::vec3(-71.75f, -80.0f, 0.0f), -90.0f, 48.0f));
 	routeIn0.addSection(new TrafficLight(glm::vec3(-71.75f, -32.0f, 0.0f), -90, 2.0f, 0, &trafficLights)); // A1-1
-	routeIn0.addSection(new Corner(glm::vec3(-71.75f, -30.0f, 0.0f), -90, 22.75f, -90.0f));
+	// trans
 	routeIn0.addModel(1);
 	routes.push_back(routeIn0);
 	routes[0].addModel(3);
+	routes[0].addModel(4);
+	routes[0].addModel(5);
+	routes[0].addModel(6);
 
 	Route routeIn1(1, &models);
 	routeIn1.addSection(new Straight(glm::vec3(-75.25f, -80.0f, 0.0f), -90.0f, 48.0f));
@@ -126,28 +129,28 @@ void Simulation::InitRoutes()
 
 	// connection routes
 	Route routeCon17(17, &models);
-	routeCon17.addSection(new Straight(glm::vec3(-49.0f, -14.25f, 0.0f), -180, 124.0f));
+	routeCon17.addSection(new Straight(glm::vec3(-60.0f, -14.25f, 0.0f), -180, 135.0f));
 	routeCon17.addSection(new TrafficLight(glm::vec3(75.0f, -14.25f, 0.0f), -180, 2.0f, 46, &trafficLights)); // A6-1
 	routeCon17.addSection(new Corner(glm::vec3(77.0f, -14.25f, 0.0f), -180, 16.25f, 90.0f));
 	// trans
 	routes.push_back(routeCon17);
 	
 	Route routeCon18(18, &models);
-	routeCon18.addSection(new Straight(glm::vec3(-49.0f, -10.75f, 0.0f), -180, 124.0f));
+	routeCon18.addSection(new Straight(glm::vec3(-60.0f, -10.75f, 0.0f), -180, 135.0f));
 	routeCon18.addSection(new TrafficLight(glm::vec3(75.0f, -10.75f, 0.0f), -180, 2.0f, 47, &trafficLights)); // A6-2
 	routeCon18.addSection(new Corner(glm::vec3(77.0f, -10.75f, 0.0f), -180, 16.25f, 90.0f));
 	// trans
 	routes.push_back(routeCon18);
 
 	Route routeCon19(19, &models);
-	routeCon19.addSection(new Straight(glm::vec3(-49.0f, -7.25f, 0.0f), -180, 124.0f));
+	routeCon19.addSection(new Straight(glm::vec3(-60.0f, -7.25f, 0.0f), -180, 135.0f));
 	routeCon19.addSection(new TrafficLight(glm::vec3(75.0f, -7.25f, 0.0f), -180, 2.0f, 48, &trafficLights)); // A6-3
 	routeCon19.addSection(new Corner(glm::vec3(77.0f, -7.25f, 0.0f), -180, 16.25f, 90.0f));
 	// trans
 	routes.push_back(routeCon19);
 
 	Route routeCon20(20, &models);
-	routeCon20.addSection(new Straight(glm::vec3(-49.0f, -3.75f, 0.0f), -180, 124.0f));
+	routeCon20.addSection(new Straight(glm::vec3(-60.0f, -3.75f, 0.0f), -180, 135.0f));
 	routeCon20.addSection(new TrafficLight(glm::vec3(75.0f, -3.75f, 0.0f), -180, 2.0f, 49, &trafficLights)); // A6-4
 	routeCon20.addSection(new Corner(glm::vec3(77.0f, -3.75f, 0.0f), -180, 16.25f, 90.0f));
 	// trans
@@ -223,7 +226,68 @@ void Simulation::InitRoutes()
 	routeOut32.addSection(new End(glm::vec3(0.0f, 0.0f, -10.0f), 0));
 	routes.push_back(routeOut32);
 
+
 	// transitions
-	routes[0].addSection(new Transition(glm::vec3(-49.0f, -10.75f, 0.0f), -180, &routes[19]));
-	routes[19].addSection(new Transition(glm::vec3(-49.0f, -10.75f, 0.0f), -180, &routes[30]));
+	Route transition0(33, &models);
+	//transition0.addSection(new Straight(glm::vec3(-71.75f, -30.0f, 0.0f), -90, 4.0f));
+	transition0.addSection(new Corner(glm::vec3(-71.75f, -26.0f, 0.0f), -90, 11.75f, -90.0f));
+	routes.push_back(transition0);
+
+	Route transition1(34, &models);
+	//transition1.addSection(new Straight(glm::vec3(-71.75f, -30.0f, 0.0f), -90, 7.5f));
+	transition1.addSection(new Corner(glm::vec3(-71.75f, -22.5f, 0.0f), -90, 11.75f, -90.0f));
+	routes.push_back(transition1);
+
+	Route transition2(35, &models);
+	//transition2.addSection(new Straight(glm::vec3(-75.25f, -30.0f, 0.0f), -90, 11.0f));
+	transition2.addSection(new Corner(glm::vec3(-75.25f, -19.0f, 0.0f), -90, 11.75f, -90.0f));
+	routes.push_back(transition2);
+	
+	Route transition3(36, &models);
+	//transition3.addSection(new Straight(glm::vec3(-75.25f, -30.0f, 0.0f), -90, 14.5f));
+	transition3.addSection(new Corner(glm::vec3(-75.25f, -15.5f, 0.0f), -90, 11.75f, -90.0f));
+	routes.push_back(transition3);
+	
+	Route transition4(37, &models);
+	routes.push_back(transition4);
+	
+	Route transition5(38, &models);
+	routes.push_back(transition5);
+	
+	Route transition6(39, &models);
+	routes.push_back(transition6);
+	
+	Route transition7(40, &models);
+	routes.push_back(transition7);
+
+	Route transition8(41, &models);
+	routes.push_back(transition8);
+
+	Route transition9(42, &models);
+	routes.push_back(transition9);
+
+	Route transition10(43, &models);
+	routes.push_back(transition10);
+
+	Route transition11(44, &models);
+	routes.push_back(transition11);
+
+	Route transition12(45, &models);
+	routes.push_back(transition12);
+
+	Route transition13(46, &models);
+	routes.push_back(transition13);
+
+	Route transition14(47, &models);
+	routes.push_back(transition14);
+
+	Route transition15(48, &models);
+	routes.push_back(transition15);
+
+	routes[0].addSection(new Transition(glm::vec3(-71.75f, -30.0f, 0.0f), -90, &routes[33], &routes[34]));
+	routes[1].addSection(new Transition(glm::vec3(-75.25f, -30.0f, 0.0f), -90, &routes[35], &routes[36]));
+	routes[33].addSection(new Transition(glm::vec3(-75.25f, -30.0f, 0.0f), -180, &routes[17]));
+	routes[34].addSection(new Transition(glm::vec3(-75.25f, -30.0f, 0.0f), -180, &routes[18]));
+	routes[35].addSection(new Transition(glm::vec3(-75.25f, -30.0f, 0.0f), -180, &routes[19]));
+	routes[36].addSection(new Transition(glm::vec3(-75.25f, -30.0f, 0.0f), -180, &routes[20]));
 }

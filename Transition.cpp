@@ -22,19 +22,24 @@ Transition::Transition(glm::vec3 startPos, int direction, Route* trans1, Route* 
 int Transition::update(float& delta, IModel* model, int section)
 {
     if (split)
-        return Transition2(delta, model, section);
+        return Transition2(model);
     
     if (!split)
-        return Transition1(delta, model, section);
+        return Transition1(model);
 }
 
-int Transition::Transition1(float& delta, IModel* model, int section)
+int Transition::Transition1(IModel* model)
 {
     transition1->addModel(model->getID());
     return -1;
 }
 
-int Transition::Transition2(float& delta, IModel* model, int section)
+int Transition::Transition2(IModel* model)
 {
-    return 0;
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> distribution(1, 10);
+    int rand = distribution(generator);
+    std::cout << rand << std::endl;
+    rand < 6 ? transition1->addModel(model->getID()) : transition2->addModel(model->getID());
+    return -1;
 }
