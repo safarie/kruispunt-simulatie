@@ -1,14 +1,13 @@
 #include "TrafficLight.hpp"
 
-TrafficLight::TrafficLight(glm::vec3 startPos, int direction, float length, int trafficLight, std::vector<TrafficLichtInfo>* ptr_trafficLights)
+TrafficLight::TrafficLight(glm::vec3 startPos, float direction, float length, int trafficLight, std::vector<TrafficLichtInfo>* ptr_trafficLights)
 {
-	this->direction = direction;
 	this->length = length;
 	this->ID = trafficLight;
 	this->trafficLights = ptr_trafficLights;
 
 	start = glm::translate(glm::mat4(1.0), startPos);
-	start = glm::rotate(start, glm::radians((float)direction), glm::vec3(0.0f, 0.0f, 1.0f));
+	start = glm::rotate(start, glm::radians(direction), glm::vec3(0.0f, 0.0f, 1.0f));
 }
 
 int TrafficLight::update(float& delta, IModel* model, int section)
@@ -19,9 +18,9 @@ int TrafficLight::update(float& delta, IModel* model, int section)
 		*modelMat = start;
 	}
 
-	// std::cout << trafficLights->at(ID).state << std::endl;
+	//std::cout << trafficLights->at(ID).state << std::endl;
 
-	if (!trafficLights->at(ID).state) {
+	if (trafficLights->at(ID).state == 0) {
 		model->stop();
 		return section;
 	}

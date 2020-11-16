@@ -659,8 +659,8 @@ void Renderer::createTextureSampler()
 void Renderer::loadModels()
 {
     ModelInfo cars{};
-    cars.model = "models/Car_new.obj";
-    cars.modelCount = 20;
+    cars.model = "models/Car.obj";
+    cars.modelCount = 270;
     cars.collisionRadius = 2.5f;
     models.push_back(cars);
 
@@ -677,7 +677,7 @@ void Renderer::loadModels()
 
     ptr_simulation->modelInfo = &models;
 
-    junctionModelInfo.model = "models/Road.obj";
+    junctionModelInfo.model = "models/Junction.obj";
     junctionModelInfo.modelCount = 1;
 
     loadModel(&junctionModelInfo, junctionBuffers);

@@ -70,7 +70,6 @@ void Socket::updateTrafficLights()
 	{
 		rapidjson::Value& light = doc[ptr_simulation->trafficLights[i].ID.c_str()];
 		ptr_simulation->trafficLights[i].state = light.GetInt();
-		//std::cout << ptr_simulation->trafficLights[i].state << std::endl;
 	}
 }
 

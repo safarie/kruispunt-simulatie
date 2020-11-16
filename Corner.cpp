@@ -1,13 +1,12 @@
 #include "Corner.hpp"
 
-Corner::Corner(glm::vec3 startPos, int direction, float radius, int degree)
+Corner::Corner(glm::vec3 startPos, float direction, float radius, float degree)
 {
-    this->direction = direction;
     this->radius = radius;
     this->degree = degree;
 
     start = glm::translate(glm::mat4(1.0), startPos);
-    start = glm::rotate(start, glm::radians((float)direction), glm::vec3(0.0f, 0.0f, 1.0f));
+    start = glm::rotate(start, glm::radians(direction), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	circumference = (radius * 2) * M_PI;
     degPerMeter = 360.0f / circumference;
