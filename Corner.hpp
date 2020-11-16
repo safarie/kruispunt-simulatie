@@ -9,12 +9,12 @@
 class Corner : public ISection
 {
 public:
-	Corner(glm::vec3 startPos, int direction, float radius, int degree);
+	Corner(glm::vec3 startPos, float direction, float radius, float degree);
 	int update(float& delta, IModel* model, int section);
 
 private:
 	float radius;
-	int degree;
+	float degree;
 	float circumference;
 	float degPerMeter;
 };

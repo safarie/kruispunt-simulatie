@@ -1,6 +1,6 @@
 #include "End.hpp"
 
-End::End(glm::vec3 end, int direction)
+End::End(glm::vec3 end, float direction)
 {
 	start = glm::translate(glm::mat4(1.0f), end);
 }

@@ -1,11 +1,11 @@
 #include "Straight.hpp"
 
-Straight::Straight(glm::vec3 startPos, int direction, float length)
+Straight::Straight(glm::vec3 startPos, float direction, float length)
 {
 	this->length = length;
 
 	start = glm::translate(glm::mat4(1.0), startPos);
-	start = glm::rotate(start, glm::radians((float)direction), glm::vec3(0.0f, 0.0f, 1.0f));
+	start = glm::rotate(start, glm::radians(direction), glm::vec3(0.0f, 0.0f, 1.0f));
 }
 
 int Straight::update(float& delta, IModel* model, int section)

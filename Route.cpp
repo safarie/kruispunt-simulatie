@@ -15,7 +15,6 @@ void Route::addModel(int modelID)
     VehicleInfo vehicle{};
     vehicle.ID = modelID;
     vehicle.section = 0;
-    vehicle.radius = models->at(modelID)->getColRad();
 
     vehicles.push_back(vehicle);
 }
@@ -25,7 +24,6 @@ void Route::addModel(int modelID, int startSection)
     VehicleInfo vehicle{};
     vehicle.ID = modelID;
     vehicle.section = startSection;
-    vehicle.radius = models->at(modelID)->getColRad();
 
     vehicles.push_back(vehicle);
 }
@@ -38,32 +36,33 @@ int Route::removeModel(int ID)
 
 void Route::update(float &delta)
 {
+    bool test = false;
     for (size_t i = 0; i < vehicles.size();)
     {
-        IModel* model = models->at(vehicles[i].ID);
-        //std::cout << model->getID() << ", " << model->getTime() << std::endl;
-        int next = sections[vehicles[i].section]->update(delta, model, vehicles[i].section);
-        if (next == -1) {
-            removeModel(vehicles[i].ID);
+        currentModel = models->at(vehicles[i].ID);
+
+        if (precedingModel != nullptr) 
+        {
+            float dx = currentModel->getPos()[3].x - precedingModel->getPos()[3].x;
+            float dy = currentModel->getPos()[3].y - precedingModel->getPos()[3].y;
+            float distance = std::sqrtf(dx * dx + dy * dy);
+
+            if (distance < currentModel->getColRad() + precedingModel->getColRad())
+                currentModel->stop();
+            else
+                currentModel->start();
         }
+
+        int next = sections[vehicles[i].section]->update(delta, currentModel, vehicles[i].section);
+        if (next == -1) {
+            if (i < vehicles.size() - 1) models->at(vehicles[i + 1].ID)->start();
+            removeModel(vehicles[i].ID);
+        }   
         else {
             vehicles[i].section = next;
-
-            if (i != 0 && i -1 != 0 && i != i - 1) {
-                IModel* precedingModel = models->at(vehicles[i - 1].ID);
-                
-                std::cout << model->getID() << ", " << vehicles[i].ID << " | " << precedingModel->getID() << ", " << vehicles[i - 1].ID << std::endl;
-                
-                float dx = model->getPos()[3].x - precedingModel->getPos()[3].x;
-                float dy = model->getPos()[3].y - precedingModel->getPos()[3].y;
-                float distance = std::sqrtf(dx * dx + dy * dy);
-
-                if (distance < model->getColRad() + precedingModel->getColRad())
-                    model->stop();
-                else
-                    model->start();
-            }
+            precedingModel = currentModel;
             i++;
         }
     }
+    precedingModel = nullptr;
 }

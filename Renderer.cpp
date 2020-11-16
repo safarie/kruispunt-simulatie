@@ -660,7 +660,7 @@ void Renderer::loadModels()
 {
     ModelInfo cars{};
     cars.model = "models/Car.obj";
-    cars.modelCount = 20;
+    cars.modelCount = 270;
     cars.collisionRadius = 2.5f;
     models.push_back(cars);
 

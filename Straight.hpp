@@ -5,7 +5,7 @@
 class Straight : public ISection
 {
 public:
-	Straight(glm::vec3 startPos, int direction, float length);
+	Straight(glm::vec3 startPos, float direction, float length);
 	int update(float& delta, IModel* model, int section);
 
 private:

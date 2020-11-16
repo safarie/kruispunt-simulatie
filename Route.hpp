@@ -13,7 +13,6 @@ struct VehicleInfo
 {
 	int ID;
 	int section;
-	int radius;
 };
 
 class Route
@@ -28,6 +27,8 @@ public:
 
 private:
 	int ID;
+	IModel* currentModel = nullptr;
+	IModel* precedingModel = nullptr;
 	std::vector<VehicleInfo> vehicles;
 	std::vector<ISection*> sections;
 	std::vector<IModel*>* models;

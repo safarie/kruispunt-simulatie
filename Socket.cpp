@@ -54,7 +54,7 @@ void Socket::Receiving()
 			isRunning = false;
 		}
 
-		//printf("%s\n", buffer);
+		printf("%s\n", buffer);
 		updateTrafficLights();
 	};
 }

@@ -11,7 +11,7 @@ struct TrafficLichtInfo {
 class TrafficLight : public ISection
 {
 public:
-	TrafficLight(glm::vec3 startPos, int direction, float length, int trafficLight, std::vector<TrafficLichtInfo>* trafficLights);
+	TrafficLight(glm::vec3 startPos, float direction, float length, int trafficLight, std::vector<TrafficLichtInfo>* trafficLights);
 	int update(float& delta, IModel* model, int section);
 
 private:
