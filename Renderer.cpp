@@ -1481,7 +1481,7 @@ void Renderer::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize s
 // uniform buffer
 void Renderer::prepareDanymicUniformBuffer()
 {
-    vkGetPhysicalDeviceProperties(physicalDevice, &gpuProperties);
+    //vkGetPhysicalDeviceProperties(physicalDevice, &gpuProperties);
 
     size_t minUboAlignment = gpuProperties.limits.minUniformBufferOffsetAlignment;
     dynamicAlignment = sizeof(glm::mat4);
@@ -1721,10 +1721,9 @@ bool Renderer::hasStencilComponent(VkFormat format) {
 
 // MSAA
 VkSampleCountFlagBits Renderer::getMaxUsableSampleCount() {
-    VkPhysicalDeviceProperties physicalDeviceProperties;
-    vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+    vkGetPhysicalDeviceProperties(physicalDevice, &gpuProperties);
 
-    VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+    VkSampleCountFlags counts = std::min(gpuProperties.limits.framebufferColorSampleCounts, gpuProperties.limits.framebufferDepthSampleCounts);
     if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
     if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
     if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
