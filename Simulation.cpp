@@ -55,7 +55,6 @@ void Simulation::InitTrafficLights()
 
 void Simulation::InitRoutes()
 {
-	// (x y z). degrees
 	// routeIn 0-16, routeOut 17-24, routeCon 25-32, transitions 33-48
 
 	// starting routes
@@ -346,65 +345,54 @@ void Simulation::InitRoutes()
 
 
 	// transitions
-	routes[0].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[33], &routes[34]));
-	routes[33].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[17]));
-	routes[34].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[18]));
+	routes[0].addSection(new Transition(&routes[33], &routes[34]));
+	routes[1].addSection(new Transition(&routes[35], &routes[36]));
+	routes[2].addSection(new Transition(&routes[28]));
+	routes[4].addSection(new Transition(&routes[26]));
+	routes[5].addSection(new Transition(&routes[25]));
+	routes[6].addSection(new Transition(&routes[37], &routes[38]));
+	routes[7].addSection(new Transition(&routes[39], &routes[40]));
+	routes[8].addSection(new Transition(&routes[32]));
+	routes[9].addSection(new Transition(&routes[31]));
+	routes[10].addSection(new Transition(&routes[41], &routes[42]));
+	routes[11].addSection(new Transition(&routes[43], &routes[44]));
+	routes[13].addSection(new Transition(&routes[45], &routes[46]));
+	routes[14].addSection(new Transition(&routes[47], &routes[48]));
+	routes[15].addSection(new Transition(&routes[30]));
+	routes[16].addSection(new Transition(&routes[29]));
+	routes[17].addSection(new Transition(&routes[31]));
+	routes[18].addSection(new Transition(&routes[32]));
+	routes[19].addSection(new Transition(&routes[29]));
+	routes[20].addSection(new Transition(&routes[30]));
+	routes[21].addSection(new Transition(&routes[25]));
+	routes[22].addSection(new Transition(&routes[26]));
+	routes[23].addSection(new Transition(&routes[27]));
+	routes[24].addSection(new Transition(&routes[28]));
 
-	routes[1].addSection(new Transition(glm::vec3(-75.25f, -30.0f, 0.0f), 0, &routes[35], &routes[36]));
-	routes[35].addSection(new Transition(glm::vec3(-75.25f, -30.0f, 0.0f), 0, &routes[19]));
-	routes[36].addSection(new Transition(glm::vec3(-75.25f, -30.0f, 0.0f), 0, &routes[20]));
-
-	routes[2].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[28]));
-
-	routes[4].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[26]));
-	routes[5].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[25]));
-
-	routes[6].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[37], &routes[38]));
-	routes[37].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[17]));
-	routes[38].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[18]));
-
-	routes[7].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[39], &routes[40]));
-	routes[39].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[19]));
-	routes[40].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[20]));
-
-	routes[8].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[32]));
-	routes[9].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[31]));
-	
-	routes[10].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[41], &routes[42]));
-	routes[41].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[21]));
-	routes[42].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[22]));
-
-	routes[11].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[43], &routes[44]));
-	routes[43].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[23]));
-	routes[44].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[24]));
-
-	routes[13].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[45], &routes[46]));
-	routes[45].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[21]));
-	routes[46].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[22]));
-
-	routes[14].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[47], &routes[48]));
-	routes[47].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[23]));
-	routes[48].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[24]));
-
-	routes[15].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[30]));
-	routes[16].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[29]));
-
-	routes[17].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[31]));
-	routes[18].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[32]));
-	routes[19].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[29]));
-	routes[20].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[30]));
-	routes[21].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[25]));
-	routes[22].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[26]));
-	routes[23].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[27]));
-	routes[24].addSection(new Transition(glm::vec3(0.0f, 0.0f, 0.0f), 0, &routes[28]));
+	routes[33].addSection(new Transition(&routes[17]));
+	routes[34].addSection(new Transition(&routes[18]));
+	routes[35].addSection(new Transition(&routes[19]));
+	routes[36].addSection(new Transition(&routes[20]));
+	routes[37].addSection(new Transition(&routes[17]));
+	routes[38].addSection(new Transition(&routes[18]));
+	routes[39].addSection(new Transition(&routes[19]));
+	routes[40].addSection(new Transition(&routes[20]));
+	routes[41].addSection(new Transition(&routes[21]));
+	routes[42].addSection(new Transition(&routes[22]));
+	routes[43].addSection(new Transition(&routes[23]));
+	routes[44].addSection(new Transition(&routes[24]));
+	routes[45].addSection(new Transition(&routes[21]));
+	routes[46].addSection(new Transition(&routes[22]));
+	routes[47].addSection(new Transition(&routes[23]));
+	routes[48].addSection(new Transition(&routes[24]));
 
 
 	// test vehicles
 	for (size_t i = 0; i < 17; i++)
 	{
-		for (size_t j = 0; j < 16; j++)
+		for (size_t j = 0; j < 8; j++)
 		{
-			routes[i].addModel(j + (i * 16));
+			routes[i].addModel(j + (i * 8));
 		}
 	}
 }

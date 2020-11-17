@@ -660,8 +660,8 @@ void Renderer::loadModels()
 {
     ModelInfo cars{};
     cars.model = "models/Car.obj";
-    cars.modelCount = 270;
-    cars.collisionRadius = 2.5f;
+    cars.modelCount = 140;
+    cars.collisionRadius = 3.5f;
     models.push_back(cars);
 
     ModelInfo busses{};
@@ -1468,11 +1468,11 @@ void Renderer::prepareDanymicUniformBuffer()
 void Renderer::updateUniformBuffer(uint32_t currentImage) 
 {
     UniformBufferObject ubo{};
-    //glm::mat4 test = ptr_simulation->models[1]->getPos();
-    //ubo.view = glm::lookAt(glm::vec3(1.0f, 0.0f, 15.0f), glm::vec3(test[3].x, test[3].y, test[3].z), glm::vec3(0.0f, 0.0f, 1.0f));
+    //glm::mat4 test = ptr_simulation->models[81]->getPos();
+    //ubo.view = glm::lookAt(glm::vec3(test[3].x, test[3].y, 2.0f), glm::vec3(test[3].x - 3, test[3].y, 2.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
     ubo.model = glm::mat4(1.0f);
-    ubo.view = glm::lookAt(glm::vec3(0.0f, 50.0f, 200.0f), glm::vec3(-20.0f, -10.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.view = glm::lookAt(glm::vec3(0.0f, 50.0f, 200.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 500.0f);
     ubo.proj[1][1] *= -1;
 

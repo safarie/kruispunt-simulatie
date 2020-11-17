@@ -7,8 +7,8 @@
 class Transition : public ISection
 {
 public:
-	Transition(glm::vec3 startPos, float direction, Route* trans1);
-	Transition(glm::vec3 startPos, float direction, Route* trans1, Route* trans2);
+	Transition(Route* trans1);
+	Transition(Route* trans1, Route* trans2);
 	int update(float& delta, IModel* model, int section);
 	int Random();
 	
