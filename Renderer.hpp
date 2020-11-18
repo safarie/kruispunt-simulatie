@@ -3,7 +3,7 @@
 #include "Window.hpp"
 #include "Simulation.hpp"
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
 #include <GLFW/glfw3.h>
 #include <glm/gtx/hash.hpp>
 
@@ -162,7 +162,7 @@ struct Descriptor {
 class Renderer
 {
 public:
-    Renderer(std::shared_ptr<Window> ptr_w, std::shared_ptr<Simulation> ptr_s) : ptr_window(move(ptr_w)), ptr_simulation(move(ptr_s)) {}
+    Renderer(std::shared_ptr<Window> ptr_w, std::shared_ptr<Camera> ptr_c, std::shared_ptr<Simulation> ptr_s) : ptr_window(move(ptr_w)), ptr_camera(move(ptr_c)), ptr_simulation(move(ptr_s)) {}
 
     void initvulkan();
     void cleanup();
@@ -173,6 +173,7 @@ private:
     int totalModelInstances = 0;
 
     std::shared_ptr<Window> ptr_window;
+    std::shared_ptr<Camera> ptr_camera;
     std::shared_ptr<Simulation> ptr_simulation;
     size_t dynamicAlignment;
 
