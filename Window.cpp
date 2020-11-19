@@ -53,10 +53,7 @@ void Window::mouseClickCallback(GLFWwindow* window, int button, int action, int 
 void Window::mouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
     auto windowClass = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
-    Mouse* mouse = &windowClass->ptr_camera->mouse;
-
-    xoffset < -0.025 || xoffset > 0.025 ? mouse->xScroll = xoffset : mouse->xScroll = 0;
-    yoffset < -0.025 || yoffset > 0.025 ? mouse->yScroll = yoffset : mouse->yScroll = 0;
+    windowClass->ptr_camera->cameraHeight -= (yoffset * 4);
 }
 
 GLFWwindow* Window::get() {

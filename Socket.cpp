@@ -37,6 +37,7 @@ bool Socket::Connect()
 		return false;
     }
 
+	isRunning = true;
 	return true;
 }
 

@@ -16,7 +16,8 @@ int main()
     bool connected = true;
     float previousTime = 0.0f;
     float frameTime = 0.0f;
-    float socketTime = 0.0f;
+    float connectionTimeout = 0.0f;
+    std::thread t1;
 
     // 1. initialize camera & window
     ptr_camera->InitCamera();
@@ -30,7 +31,8 @@ int main()
 
     // 4. sockets
     connected = ptr_socket->Connect();
-    std::thread t1(&Socket::Receiving, ptr_socket);
+    if (connected)
+        t1 = std::thread(&Socket::Receiving, ptr_socket);
 
     // 5. main loop
     while (!glfwWindowShouldClose(ptr_window->get()))
@@ -44,8 +46,8 @@ int main()
         glfwPollEvents();
 
         frameTime += delta;
-        socketTime += delta;
-        
+        connected ? connectionTimeout = 0.0f : connectionTimeout += delta;
+
         if (frameTime <= 1.0f / 60.0f) {
             continue;
         }
@@ -54,20 +56,27 @@ int main()
         ptr_simulation->LateUpdate(frameTime);
         ptr_camera->Update(frameTime);
         ptr_renderer->drawFrame();
-         
+
         frameTime = 0.0f;
+
+        /*if (connectionTimeout >= 10.0f && !connected) {
+            connected = ptr_socket->Connect();
+            if (connected)
+                t1 = std::thread(&Socket::Receiving, ptr_socket);
+        }*/
     }
 
     // wait till current frame is done
     vkDeviceWaitIdle(ptr_renderer->getDevice());
-    ptr_socket->Close();
-    t1.join();
 
     // 6. cleanup
+    ptr_socket->Close();
+    t1.join();
     ptr_socket.reset();
     ptr_renderer->cleanup();
     ptr_renderer.reset();
     ptr_simulation.reset();
     ptr_window->cleanup();
     ptr_window.reset();
+    ptr_camera.reset();
 }

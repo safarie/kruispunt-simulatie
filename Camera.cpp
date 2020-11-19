@@ -34,17 +34,29 @@ void Camera::Update(float& delta)
 		view = glm::lookAt(eye, center, up);
 	}
 
-	if (scrolling()) {
-		eye.z += mouse.yScroll;
-		view = glm::lookAt(eye, center, up);
-	}
-
 	if (mouseMovement()) {
-		// mouse movement
+
+		differentsX += (prevXpos - mouse.xPos) / 2;
+
+		float radius = 50.0f;
+		float angle = std::fmodf(differentsX, 360.0f);
+
+		center.x = eye.x + (radius * std::sinf(glm::radians(angle)));
+		center.y = eye.y + (radius * -std::cosf(glm::radians(angle)));
+
+		prevXpos = mouse.xPos;
+		prevYpos = mouse.yPos;
+
+		view = glm::lookAt(eye, center, up);
 	}
 
 	if (keys.space)
 		view = defaultView;
+
+	if (cameraHeight != eye.z) {
+		eye.z = cameraHeight;
+		view = glm::lookAt(eye, center, up);
+	}
 }
 
 bool Camera::keyboardInput()
@@ -54,10 +66,5 @@ bool Camera::keyboardInput()
 
 bool Camera::mouseMovement()
 {
-	return false;
-}
-
-bool Camera::scrolling()
-{
-	return mouse.xScroll != 0 || mouse.yScroll != 0;
+	return mouse.leftClick;
 }

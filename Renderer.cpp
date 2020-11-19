@@ -1085,6 +1085,7 @@ void Renderer::cleanup()
     vkDestroyInstance(instance, nullptr);
 
     ptr_simulation.reset();
+    ptr_camera.reset();
     ptr_window.reset();
 }
 
