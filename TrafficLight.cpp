@@ -21,11 +21,13 @@ int TrafficLight::update(float& delta, IModel* model, int section)
 	//std::cout << trafficLights->at(ID).state << std::endl;
 
 	if (trafficLights->at(ID).state == 0) {
+		trafficLights->at(ID).traffic = 1;		// testing
 		model->stop();
 		return section;
 	}
 
 	model->start();
+	trafficLights->at(ID).traffic = 0;			// testing
 
 	if (model->getTime() * model->getSpeed() < length) {
 		*modelMat = glm::translate(*modelMat, delta * model->getSpeed() * glm::vec3(-1.0f, 0.0f, 0.0f));

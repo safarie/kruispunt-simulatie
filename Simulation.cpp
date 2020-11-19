@@ -1,13 +1,13 @@
 #include "Simulation.hpp"
 
-void Simulation::InitSimulator()
+void Simulation::initSimulator()
 {
-	InitTraffic();
-	InitTrafficLights();
-	InitRoutes();
+	initTraffic();
+	initTrafficLights();
+	initRoutes();
 }
 
-void Simulation::Update(float &delta) 
+void Simulation::update(float &delta) 
 {
 	for (Route &route : routes)
 	{
@@ -15,12 +15,12 @@ void Simulation::Update(float &delta)
 	}
 }
 
-void Simulation::LateUpdate(float& delta) 
+void Simulation::lateUpdate(float& delta) 
 { 
 	// recycle vehicles that are not in use anymore
 }
 
-void Simulation::InitTraffic()
+void Simulation::initTraffic()
 {	
 	int totalModelCount = 0;
 	for (auto& mi : *modelInfo) {
@@ -32,7 +32,7 @@ void Simulation::InitTraffic()
 	}
 }
 
-void Simulation::InitTrafficLights()
+void Simulation::initTrafficLights()
 {
 	const std::vector<std::string> trafficLightNames = 
 	{ 
@@ -53,7 +53,7 @@ void Simulation::InitTrafficLights()
 	}
 }
 
-void Simulation::InitRoutes()
+void Simulation::initRoutes()
 {
 	// routeIn 0-16, routeOut 17-24, routeCon 25-32, transitions 33-48
 

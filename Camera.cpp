@@ -1,11 +1,11 @@
 #include "Camera.hpp"
 
-void Camera::InitCamera()
+void Camera::initCamera()
 {
 	view = defaultView;
 }
 
-void Camera::Update(float& delta)
+void Camera::update(float& delta)
 {
 	float speed = delta * 50.0f;
 

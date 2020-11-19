@@ -27,8 +27,8 @@ public:
 	glm::mat4 view;
 	float cameraHeight = 200;
 
-	void InitCamera();
-	void Update(float& delta);
+	void initCamera();
+	void update(float& delta);
 	bool keyboardInput();
 	bool mouseMovement();
 
