@@ -17,7 +17,7 @@ void Simulation::Update(float &delta)
 
 void Simulation::LateUpdate(float& delta) 
 { 
-
+	// recycle vehicles that are not in use anymore
 }
 
 void Simulation::InitTraffic()

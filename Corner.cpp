@@ -26,7 +26,7 @@ int Corner::update(float& delta, IModel* model, int section)
 		*modelMat = start;
 	}
 
-	if (model->getTime() * fabs(angle) < abs(degree)) {
+	if (model->getTime() * fabsf(angle) < abs(degree)) {
 		*modelMat = glm::translate(*modelMat, delta * speed * glm::vec3(-1.0, 0.0f, 0.0f));
 		*modelMat = glm::rotate(*modelMat, delta * glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
 		model->update(delta, *modelMat);
