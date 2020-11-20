@@ -20,12 +20,12 @@ int Transition::update(float& delta, IModel* model, int section)
         return -1;
     }
     else {
-        Random() < 6 ? transition1->addModel(model->getID()) : transition2->addModel(model->getID());
+        random() < 6 ? transition1->addModel(model->getID()) : transition2->addModel(model->getID());
         return -1;
     }
 }
 
-int Transition::Random()
+int Transition::random()
 {
     std::uniform_real_distribution<float> distribution(1.0f, 10.0f);
     std::random_device rd;

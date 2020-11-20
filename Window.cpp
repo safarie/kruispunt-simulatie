@@ -1,4 +1,5 @@
 #include "Window.hpp"
+#include <iostream>
 
 void Window::initWindow() {
     glfwInit();
@@ -46,8 +47,15 @@ void Window::mouseClickCallback(GLFWwindow* window, int button, int action, int 
     auto windowClass = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
     Mouse* mouse = &windowClass->ptr_camera->mouse;
 
-    button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS ? mouse->rightClick = true : mouse->rightClick = false;
-    button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS ? mouse->leftClick = true : mouse->leftClick = false;
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        mouse->leftClick = action;
+        windowClass->ptr_camera->dragStartX = mouse->xPos;
+        windowClass->ptr_camera->dragStartY = mouse->yPos;
+    }
+
+    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        mouse->leftClick = action;
+    }
 }
 
 void Window::mouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset)

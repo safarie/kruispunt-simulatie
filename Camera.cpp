@@ -1,11 +1,11 @@
 #include "Camera.hpp"
 
-void Camera::InitCamera()
+void Camera::initCamera()
 {
 	view = defaultView;
 }
 
-void Camera::Update(float& delta)
+void Camera::update(float& delta)
 {
 	float speed = delta * 50.0f;
 
@@ -34,22 +34,27 @@ void Camera::Update(float& delta)
 		view = glm::lookAt(eye, center, up);
 	}
 
-	if (mouseMovement()) {
+	if (mouse.leftClick) {
 
-		differentsX += (prevXpos - mouse.xPos) / 2;
+		xAxis = (dragStartX - mouse.xPos) / 2;
+		yAxis = (dragStartY - mouse.yPos);
 
 		float radius = 50.0f;
-		float angle = std::fmodf(differentsX, 360.0f);
+		angle = std::fmodf(rotation + xAxis, 360.0f);
 
 		center.x = eye.x + (radius * std::sinf(glm::radians(angle)));
 		center.y = eye.y + (radius * -std::cosf(glm::radians(angle)));
 
-		prevXpos = mouse.xPos;
-		prevYpos = mouse.yPos;
+		center.z = centerHeight + yAxis;
 
 		view = glm::lookAt(eye, center, up);
 	}
 
+	if (!mouse.leftClick) {
+		centerHeight = center.z;
+		rotation = angle;
+	}
+	
 	if (keys.space)
 		view = defaultView;
 
@@ -62,9 +67,4 @@ void Camera::Update(float& delta)
 bool Camera::keyboardInput()
 {
 	return keys.up || keys.down || keys.left || keys.right;
-}
-
-bool Camera::mouseMovement()
-{
-	return mouse.leftClick;
 }

@@ -10,7 +10,7 @@ public:
 	Transition(Route* trans1);
 	Transition(Route* trans1, Route* trans2);
 	int update(float& delta, IModel* model, int section);
-	int Random();
+	int random();
 	
 private:
 	bool split = false;

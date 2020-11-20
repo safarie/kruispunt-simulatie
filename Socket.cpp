@@ -1,6 +1,6 @@
 #include "Socket.hpp"
 
-bool Socket::Connect()
+bool Socket::connecting()
 {
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 	{
@@ -33,7 +33,7 @@ bool Socket::Connect()
     {
 		std::cout << WSAGetLastError() << std::endl;
 		std::cout << "Connection Failed" << std::endl;
-		Close();
+		close();
 		return false;
     }
 
@@ -41,11 +41,48 @@ bool Socket::Connect()
 	return true;
 }
 
-void Socket::Receiving()
+void Socket::sending()
+{
+	float previousTime = 0.0f;
+	float interval = 0.0f;
+
+	while (isRunning)
+	{
+		static auto startTime = std::chrono::high_resolution_clock::now();
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+		float delta = time - previousTime;
+		previousTime = time;
+
+		dataRecived ? interval += delta : interval = 0.0f;
+
+		if (interval <= 5.0)
+			continue;
+
+		std::string temp = "451:";
+		temp.append(getTraffic());
+		sendBuffer = &temp[0];
+
+		forward = send(client, sendBuffer, (int)strlen(sendBuffer), 0);
+
+		if (forward == SOCKET_ERROR) {
+			std::cout << WSAGetLastError() << std::endl;
+			std::cout << "send() failed or connection closed prematurely" << std::endl;
+			closesocket(client);
+			isRunning = false;
+		}
+
+		printf("%s\n", "Traffic data send!");
+
+		interval = 0.0f;
+	}
+}
+
+void Socket::receiving()
 {
 	while (isRunning) 
 	{
-		received = recv(client, buffer, 1023, 0);
+		received = recv(client, reciveBuffer, sizeof(reciveBuffer), 0);
 
 		if (received <= 0)
 		{
@@ -55,17 +92,38 @@ void Socket::Receiving()
 			isRunning = false;
 		}
 
-		printf("%s\n", buffer);
+		printf("%s\n", reciveBuffer);
+		dataRecived = true;
 		updateTrafficLights();
 	};
 }
 
-void Socket::updateTrafficLights()
+std::string Socket::getTraffic()
 {
-	std::copy(buffer + 4, buffer + (sizeof(buffer) / sizeof(buffer[0])), buffer + 0); //remove header
+	std::copy(std::begin(reciveBuffer), std::end(reciveBuffer), tempBuffer); //copy buffer to modify json string
 
 	rapidjson::Document doc;
-	doc.Parse(buffer);
+	doc.Parse(tempBuffer);
+
+	for (size_t i = 0; i < ptr_simulation->trafficLights.size(); i++)
+	{
+		rapidjson::Value& light = doc[ptr_simulation->trafficLights[i].ID.c_str()];
+		light.SetInt(ptr_simulation->trafficLights[i].traffic);
+	}
+
+	rapidjson::StringBuffer buffer;
+	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+	doc.Accept(writer);
+
+	return buffer.GetString();
+}
+
+void Socket::updateTrafficLights()
+{
+	std::copy(reciveBuffer + 4, reciveBuffer + sizeof(reciveBuffer), reciveBuffer); //remove header
+
+	rapidjson::Document doc;
+	doc.Parse(reciveBuffer);
 
 	for (size_t i = 0; i < ptr_simulation->trafficLights.size(); i++)
 	{
@@ -74,7 +132,7 @@ void Socket::updateTrafficLights()
 	}
 }
 
-void Socket::Close()
+void Socket::close()
 {
 	isRunning = false;
 	ptr_simulation.reset();

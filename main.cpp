@@ -13,26 +13,28 @@ int main()
     std::shared_ptr<Socket> ptr_socket(new Socket(ptr_simulation));
     std::shared_ptr<Renderer> ptr_renderer(new Renderer(ptr_window, ptr_camera, ptr_simulation));
 
-    bool connected = true;
+    bool connected = false;
     float previousTime = 0.0f;
     float frameTime = 0.0f;
     float connectionTimeout = 0.0f;
-    std::thread t1;
+    std::thread t1, t2;
 
     // 1. initialize camera & window
-    ptr_camera->InitCamera();
+    ptr_camera->initCamera();
     ptr_window->initWindow();
 
     // 2. initialize vulkan
     ptr_renderer->initvulkan();
 
     // 3. initialize simulator
-    ptr_simulation->InitSimulator();
+    ptr_simulation->initSimulator();
 
     // 4. sockets
-    connected = ptr_socket->Connect();
-    if (connected)
-        t1 = std::thread(&Socket::Receiving, ptr_socket);
+    connected = ptr_socket->connecting();
+    if (connected) {
+        t1 = std::thread(&Socket::receiving, ptr_socket);
+        t2 = std::thread(&Socket::sending, ptr_socket);
+    }
 
     // 5. main loop
     while (!glfwWindowShouldClose(ptr_window->get()))
@@ -52,9 +54,9 @@ int main()
             continue;
         }
 
-        ptr_simulation->Update(frameTime);
-        ptr_simulation->LateUpdate(frameTime);
-        ptr_camera->Update(frameTime);
+        ptr_simulation->update(frameTime);
+        ptr_simulation->lateUpdate(frameTime);
+        ptr_camera->update(frameTime);
         ptr_renderer->drawFrame();
 
         frameTime = 0.0f;
@@ -70,8 +72,9 @@ int main()
     vkDeviceWaitIdle(ptr_renderer->getDevice());
 
     // 6. cleanup
-    ptr_socket->Close();
+    ptr_socket->close();
     t1.join();
+    t2.join();
     ptr_socket.reset();
     ptr_renderer->cleanup();
     ptr_renderer.reset();

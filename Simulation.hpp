@@ -26,12 +26,12 @@ public:
     std::vector<TrafficLichtInfo> trafficLights;
     std::vector<ModelInfo>* modelInfo;
 
-    void InitSimulator();
-    void Update(float& delta);
-    void LateUpdate(float& delta);
-    void InitTraffic();
-    void InitTrafficLights();
-    void InitRoutes();
+    void initSimulator();
+    void update(float& delta);
+    void lateUpdate(float& delta);
 
 private:
+    void initTraffic();
+    void initTrafficLights();
+    void initRoutes();
 };

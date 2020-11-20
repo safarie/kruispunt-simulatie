@@ -5,6 +5,7 @@
 
 struct TrafficLichtInfo {
 	std::string ID;
+	int traffic;
 	int state;
 };
 
