@@ -54,7 +54,7 @@ void Socket::sending()
 		float delta = time - previousTime;
 		previousTime = time;
 
-		interval += delta;
+		dataRecived ? interval += delta : interval = 0.0f;
 
 		if (interval <= 5.0)
 			continue;
@@ -63,7 +63,7 @@ void Socket::sending()
 		temp.append(getTraffic());
 		sendBuffer = &temp[0];
 
-		forward = send(client, sendBuffer, sizeof(sendBuffer), 0);
+		forward = send(client, sendBuffer, (int)strlen(sendBuffer), 0);
 
 		if (forward == SOCKET_ERROR) {
 			std::cout << WSAGetLastError() << std::endl;
@@ -72,7 +72,7 @@ void Socket::sending()
 			isRunning = false;
 		}
 
-		printf("%s\n", sendBuffer);
+		printf("%s\n", "Traffic data send!");
 
 		interval = 0.0f;
 	}
@@ -92,7 +92,8 @@ void Socket::receiving()
 			isRunning = false;
 		}
 
-		//printf("%s\n", reciveBuffer);
+		printf("%s\n", reciveBuffer);
+		dataRecived = true;
 		updateTrafficLights();
 	};
 }

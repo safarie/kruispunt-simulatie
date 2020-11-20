@@ -28,6 +28,7 @@ private:
 	SOCKET client = INVALID_SOCKET;
 	int connection, received, forward;
 	bool isRunning = true;
+	bool dataRecived = false;
 	const int port = 54000;
 	const PCSTR host = "127.0.0.1";
 	struct sockaddr_in server;
