@@ -49,6 +49,7 @@ void Simulation::initTrafficLights()
 		TrafficLichtInfo light{};
 		light.ID = trafficLightNames[i];
 		light.state = 0;
+		light.traffic = 0;
 		trafficLights.push_back(light);
 	}
 }
