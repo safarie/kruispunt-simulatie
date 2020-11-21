@@ -707,7 +707,7 @@ void Renderer::loadModels()
 
     ptr_simulation->modelInfo = &models;
 
-    junctionModelInfo.model = "models/Junction.obj";
+    junctionModelInfo.model = "models/JunctionV2.obj";
     junctionModelInfo.modelCount = 1;
 
     loadModel(&junctionModelInfo, junctionBuffers);
@@ -1511,7 +1511,7 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
     ubo.view = glm::lookAt(glm::vec3(0.0f, 50.0f, 200.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 500.0f);
     ubo.proj[1][1] *= -1;
-    ubo.lightposition = glm::vec3(0, 25, 150);
+    ubo.lightposition = glm::vec3(0, 25, 125);
 
     void* data;
     vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(UniformBufferObject), 0, &data);

@@ -23,5 +23,4 @@ void main() {
     vec3 specular = pow(max(dot(R, V), 0.0), 16.0) * vec3(1.35);
 
     outColor = texture(texSampler, fragTexCoord) * vec4(ambient + diffuse + specular, 1.0);
-    //outColor = texture(texSampler, fragTexCoord)
 }
