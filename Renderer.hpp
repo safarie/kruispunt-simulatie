@@ -35,7 +35,7 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-const std::string TEXTURE_PATH = "textures/Car.png";
+const std::string TEXTURE_PATH = "textures/gradiant.png";
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -108,27 +108,27 @@ struct Vertex {
     }
 };
 
-//namespace std {
-//    template<> struct hash<Vertex> {
-//        size_t operator()(Vertex const& vertex) const {
-//            return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
-//        }
-//    };
-//}
-
 namespace std {
     template<> struct hash<Vertex> {
         size_t operator()(Vertex const& vertex) const {
-            return ((((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.normal) << 1)) >> 1) ^ (hash<glm::vec3>()(vertex.normal) << 1)) >> 1 ) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
+            return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
         }
     };
 }
+
+//namespace std {
+//    template<> struct hash<Vertex> {
+//        size_t operator()(Vertex const& vertex) const {
+//            return ((((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.normal) << 1)) >> 1) ^ (hash<glm::vec3>()(vertex.normal) << 1)) >> 1 ) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
+//        }
+//    };
+//}
 
 struct UniformBufferObject {
     alignas(16) glm::mat4 model;
     alignas(16) glm::mat4 view;
     alignas(16) glm::mat4 proj;
-    alignas(16) glm::mat4 lightPos;
+    alignas(16) glm::vec3 lightPos;
 };
 
 struct GraphicsPipeLine {

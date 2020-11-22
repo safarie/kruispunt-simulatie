@@ -707,7 +707,7 @@ void Renderer::loadModels()
 
     ptr_simulation->modelInfo = &models;
 
-    junctionModelInfo.model = "models/Junction.obj";
+    junctionModelInfo.model = "models/JunctionV2.obj";
     junctionModelInfo.modelCount = 1;
 
     loadModel(&junctionModelInfo, junctionBuffers);
@@ -1504,15 +1504,13 @@ void Renderer::prepareDanymicUniformBuffer()
 
 void Renderer::updateUniformBuffer(uint32_t currentImage) 
 {
-    UniformBufferObject ubo{};
-    //glm::mat4 test = ptr_simulation->models[81]->getPos();
-    //ubo.view = glm::lookAt(glm::vec3(test[3].x, test[3].y, 2.0f), glm::vec3(test[3].x - 3, test[3].y, 2.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    
+    UniformBufferObject ubo{};   
     ubo.model = glm::mat4(1.0f);
     ubo.view = ptr_camera->view;
-    //ubo.view = glm::lookAt(glm::vec3(0.0f, 50.0f, 200.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    //ubo.view = glm::lookAt(glm::vec3(-100.0f, 1.0f, 50.0f), glm::vec3(-100.0f, 0.0f, 0.0f), glm::vec3(0.0f ,0.0f ,1.0f));
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 500.0f);
     ubo.proj[1][1] *= -1;
+    ubo.lightPos = glm::vec3(-77.0f, -45.0f, 150.0f);
 
     void* data;
     vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(UniformBufferObject), 0, &data);
