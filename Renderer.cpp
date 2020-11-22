@@ -707,7 +707,7 @@ void Renderer::loadModels()
 
     ptr_simulation->modelInfo = &models;
 
-    junctionModelInfo.model = "models/Junction.obj";
+    junctionModelInfo.model = "models/JunctionV2.obj";
     junctionModelInfo.modelCount = 1;
 
     loadModel(&junctionModelInfo, junctionBuffers);
@@ -1377,6 +1377,12 @@ void Renderer::loadModel(ModelInfo* model, ModelBuffers& modelBuffer)
                 attrib.vertices[3 * index.vertex_index + 2]
             };
 
+            vertex.normal = {
+                attrib.normals[3 * index.normal_index + 0],
+                attrib.normals[3 * index.normal_index + 1],
+                attrib.normals[3 * index.normal_index + 2]
+            };
+
             vertex.texCoord = {
                 attrib.texcoords[2 * index.texcoord_index + 0],
                 1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
@@ -1498,15 +1504,13 @@ void Renderer::prepareDanymicUniformBuffer()
 
 void Renderer::updateUniformBuffer(uint32_t currentImage) 
 {
-    UniformBufferObject ubo{};
-    //glm::mat4 test = ptr_simulation->models[81]->getPos();
-    //ubo.view = glm::lookAt(glm::vec3(test[3].x, test[3].y, 2.0f), glm::vec3(test[3].x - 3, test[3].y, 2.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    
+    UniformBufferObject ubo{};   
     ubo.model = glm::mat4(1.0f);
     ubo.view = ptr_camera->view;
-    //ubo.view = glm::lookAt(glm::vec3(0.0f, 50.0f, 200.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    //ubo.view = glm::lookAt(glm::vec3(-100.0f, 1.0f, 50.0f), glm::vec3(-100.0f, 0.0f, 0.0f), glm::vec3(0.0f ,0.0f ,1.0f));
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 500.0f);
     ubo.proj[1][1] *= -1;
+    ubo.lightPos = glm::vec3(-77.0f, -45.0f, 150.0f);
 
     void* data;
     vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(UniformBufferObject), 0, &data);

@@ -26,10 +26,9 @@ public:
 	Mouse mouse;
 	glm::mat4 view;
 
+	float dragStartX = 0.0f; 
+	float dragStartY = 0.0f; 
 	float cameraHeight = 200;
-	float centerHeight, rotation, angle;
-	float dragStartX = 0.0f;
-	float dragStartY = 0.0f;
 
 	void initCamera();
 	void update(float& delta);
@@ -41,5 +40,9 @@ private:
 	glm::vec3 up = glm::vec3(0.0f, 0.0f, 1.0f);
 	glm::mat4 defaultView = glm::lookAt(eye, center, up);
 
-	float xAxis, yAxis;
+	float xAxis = 0.0f; 
+	float yAxis = 0.0f;
+	float centerHeight = 0.0f; 
+	float angle = 0.0f; 
+	float rotation = 0.0f;
 };
