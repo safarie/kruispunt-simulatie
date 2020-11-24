@@ -54,7 +54,7 @@ void Socket::sending()
 		float delta = time - previousTime;
 		previousTime = time;
 
-		dataRecived ? interval += delta : interval = 0.0f;
+		dataReceived ? interval += delta : interval = 0.0f;
 
 		if (interval <= 5.0)
 			continue;
@@ -82,7 +82,7 @@ void Socket::receiving()
 {
 	while (isRunning) 
 	{
-		received = recv(client, reciveBuffer, sizeof(reciveBuffer), 0);
+		received = recv(client, receiveBuffer, sizeof(receiveBuffer), 0);
 
 		if (received <= 0)
 		{
@@ -92,16 +92,14 @@ void Socket::receiving()
 			isRunning = false;
 		}
 
-		printf("%s\n", reciveBuffer);
-		dataRecived = true;
+		printf("%s\n", receiveBuffer);
+		dataReceived = true;
 		updateTrafficLights();
 	};
 }
 
 std::string Socket::getTraffic()
 {
-	std::copy(std::begin(reciveBuffer), std::end(reciveBuffer), tempBuffer); //copy buffer to modify json string
-
 	rapidjson::Document doc;
 	doc.Parse(tempBuffer);
 
@@ -120,10 +118,11 @@ std::string Socket::getTraffic()
 
 void Socket::updateTrafficLights()
 {
-	std::copy(reciveBuffer + 4, reciveBuffer + sizeof(reciveBuffer), reciveBuffer); //remove header
+	std::copy(receiveBuffer + 4, receiveBuffer + sizeof(receiveBuffer), receiveBuffer); //remove header
+	std::copy(std::begin(receiveBuffer), std::end(receiveBuffer), tempBuffer); //copy buffer for sending back data
 
 	rapidjson::Document doc;
-	doc.Parse(reciveBuffer);
+	doc.Parse(receiveBuffer);
 
 	for (size_t i = 0; i < ptr_simulation->trafficLights.size(); i++)
 	{
