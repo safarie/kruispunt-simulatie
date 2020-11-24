@@ -19,11 +19,11 @@ void main() {
     vec3 N = normalize(inNormal);
     vec3 L = normalize(inLightVec);
     vec3 V = normalize(inViewVec);
-    vec3 R = reflect(-L, N);
+    vec3 R = reflect(L, N);
    
     vec3 ambient = inColor * vec3(0.1, 0.1, 0.1) / (inDis2Light * inDis2Light);
     vec3 diffuse = inColor * lightPower * clamp(dot(N, L), 0,1) / (inDis2Light * inDis2Light);
-    vec3 specular = vec3(lightPower) * pow(clamp(dot(R, V), 0,1), 5.0) / (inDis2Light * inDis2Light);
+    vec3 specular = vec3(lightPower) * pow(clamp(dot(R, V), 0,1), 1.0) / (inDis2Light * inDis2Light);
    
     outFragColor = color * vec4(ambient + diffuse + specular, 1.0);
 }

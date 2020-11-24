@@ -27,14 +27,14 @@ layout(location = 5) out float outDis2Light;
 void main() {
     mat4 modelView = ubo.view * dubo.model;
     vec4 pos = dubo.model * vec4(inPosition, 1.0);
-    vec3 lPos = ubo.lightPos.xyz;
+    vec3 lPos = ubo.lightPos;
 
     gl_Position = ubo.proj * modelView * vec4(inPosition, 1.0);
     
     outColor = inColor;
     outUV = inUV;
 	outNormal = mat3(dubo.model) * inNormal;
-	outViewVec = mat3(dubo.model) * vec3(1.0);
+	outViewVec = pos.xyz;
     outLightVec = lPos - pos.xyz;
     outDis2Light = distance(lPos, pos.xyz);
 }
