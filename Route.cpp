@@ -12,6 +12,8 @@ void Route::addSection(ISection* section)
 
 void Route::addModel(int modelID)
 {
+    models->at(modelID)->activate();
+
     VehicleInfo vehicle{};
     vehicle.ID = modelID;
     vehicle.section = 0;
@@ -36,12 +38,11 @@ int Route::removeModel(int ID)
 
 void Route::update(float &delta)
 {
-    bool test = false;
     for (size_t i = 0; i < vehicles.size();)
     {
         currentModel = models->at(vehicles[i].ID);
 
-        if (precedingModel != nullptr) 
+        if (precedingModel != nullptr)
         {
             float dx = currentModel->getPos()[3].x - precedingModel->getPos()[3].x;
             float dy = currentModel->getPos()[3].y - precedingModel->getPos()[3].y;
@@ -57,7 +58,7 @@ void Route::update(float &delta)
         if (next == -1) {
             if (i < vehicles.size() - 1) models->at(vehicles[i + 1].ID)->start();
             removeModel(vehicles[i].ID);
-        }   
+        }
         else {
             vehicles[i].section = next;
             precedingModel = currentModel;

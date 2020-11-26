@@ -9,5 +9,6 @@ int End::update(float& delta, IModel* model, int section)
 {
 	model->update(delta, start);
 	model->resetTime();
+	model->deactivate();
 	return -1;
 }

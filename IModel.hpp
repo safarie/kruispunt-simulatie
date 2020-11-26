@@ -6,10 +6,22 @@ class IModel
 {
 public:
 	void update(float &delta, glm::mat4 pos) {
-		if (isMoving) {
+		if (moving) {
 			time += delta;
 			position = pos;
 		}
+	}
+
+	void activate() {
+		active = true;
+	}
+
+	void deactivate() {
+		active = false;
+	}
+
+	bool isActive() {
+		return active;
 	}
 
 	void resetTime() {
@@ -17,11 +29,11 @@ public:
 	}
 
 	void start() {
-		isMoving = true;
+		moving = true;
 	}
 
 	void stop() {
-		isMoving = false;
+		moving = false;
 	}
 
 	float getColRad() {
@@ -37,12 +49,14 @@ public:
 	}
 
 	virtual int getID() = 0;
+	virtual int getType() = 0;
 	virtual float getSpeed() = 0;
 	virtual void setSpeed(float Mps) = 0;
 
 protected:
 	float collisionRadius = 0.0f;
-	bool isMoving = true;
+	bool moving = true;
+	bool active = false;
 	float time = 0.0f;
 	glm::mat4 position = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -10.0f));
 };

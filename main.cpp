@@ -73,8 +73,8 @@ int main()
 
     // 6. cleanup
     ptr_socket->close();
-    t1.join();
     t2.join();
+    t1.join();
     ptr_socket.reset();
     ptr_renderer->cleanup();
     ptr_renderer.reset();

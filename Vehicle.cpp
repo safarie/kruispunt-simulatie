@@ -1,8 +1,10 @@
 #include "Vehicle.hpp"
 
-Vehicle::Vehicle(int vehicleID, float collision) {
-	ID = vehicleID;
-	collisionRadius = collision;
+Vehicle::Vehicle(int vehicleID, int type, float speed, float collision) {
+	this->ID = vehicleID;
+	this->type = type;
+	this->collisionRadius = collision;
+	this->speed = speed;
 	float initialize = 0.0f;
 	update(initialize, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -10.0f)));
 	// color / texture, model, type(car / bus), collision radius
@@ -10,6 +12,10 @@ Vehicle::Vehicle(int vehicleID, float collision) {
 
 int Vehicle::getID() {
 	return ID;
+}
+
+int Vehicle::getType() {
+	return type;
 }
 
 float Vehicle::getSpeed()

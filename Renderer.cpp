@@ -690,15 +690,35 @@ void Renderer::loadModels()
 {
     ModelInfo cars{};
     cars.model = "models/Car.obj";
+    cars.type = 0;
     cars.modelCount = 140;
+    cars.modelSpeed = 14.0f;
     cars.collisionRadius = 3.5f;
     models.push_back(cars);
 
     ModelInfo busses{};
     busses.model = "models/Bus.obj";
+    busses.type = 1;
     busses.modelCount = 5;
+    busses.modelSpeed = 14.0f;
     busses.collisionRadius = 5.0f;
     models.push_back(busses);
+
+    ModelInfo bicycles{};
+    bicycles.model = "models/Bicycle.obj";
+    bicycles.type = 2;
+    bicycles.modelCount = 50;
+    bicycles.modelSpeed = 5.5f;
+    bicycles.collisionRadius = 1.25f;
+    models.push_back(bicycles);
+
+    ModelInfo pedestrians{};
+    pedestrians.model = "models/Pedestrian.obj";
+    pedestrians.type = 3;
+    pedestrians.modelCount = 50;
+    pedestrians.modelSpeed = 1.5;
+    pedestrians.collisionRadius = 0.5;
+    models.push_back(pedestrians);
 
     for (auto &m : models) {
         loadModel(&m, vehicleBuffers);
@@ -707,7 +727,7 @@ void Renderer::loadModels()
 
     ptr_simulation->modelInfo = &models;
 
-    junctionModelInfo.model = "models/JunctionV2.obj";
+    junctionModelInfo.model = "models/JunctionV3.obj";
     junctionModelInfo.modelCount = 1;
 
     loadModel(&junctionModelInfo, junctionBuffers);
@@ -1510,7 +1530,7 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
     //ubo.view = glm::lookAt(glm::vec3(-100.0f, 1.0f, 50.0f), glm::vec3(-100.0f, 0.0f, 0.0f), glm::vec3(0.0f ,0.0f ,1.0f));
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 500.0f);
     ubo.proj[1][1] *= -1;
-    ubo.lightPos = glm::vec3(-77.0f, -45.0f, 150.0f);
+    ubo.lightPos = glm::vec3(0.0f, 0.0f, 350.0f);
 
     void* data;
     vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(UniformBufferObject), 0, &data);
