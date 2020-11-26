@@ -12,7 +12,9 @@
 
 struct ModelInfo {
     std::string model;
+    int type;
     int modelCount;
+    float modelSpeed;
     float collisionRadius;
     uint32_t indicesCount;
     uint32_t vertexCount;
@@ -31,7 +33,10 @@ public:
     void lateUpdate(float& delta);
 
 private:
+    std::vector<std::vector<int>> spawnRoutes;
     void initTraffic();
     void initTrafficLights();
     void initRoutes();
+    void spawn(int vehicleID);
+    int random(float first, float last);
 };
