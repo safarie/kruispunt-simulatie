@@ -964,7 +964,7 @@ void Renderer::createCommandBuffers()
 
         vkCmdBindIndexBuffer(commandBuffers[i], junctionBuffers.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-        vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, junctionPipeline.Layout, 0, 1, &junctionDescriptor.set[i], 0, 0); // create special set for junction
+        vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, junctionPipeline.Layout, 0, 1, &junctionDescriptor.set[i], 0, 0);
 
         vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(junctionModelInfo.indicesCount), 1, 0, 0, 0);
 
@@ -1505,11 +1505,9 @@ void Renderer::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize s
 }
 
 
-// uniform buffer
+// uniform buffers
 void Renderer::prepareDanymicUniformBuffer()
 {
-    //vkGetPhysicalDeviceProperties(physicalDevice, &gpuProperties);
-
     size_t minUboAlignment = gpuProperties.limits.minUniformBufferOffsetAlignment;
     dynamicAlignment = sizeof(glm::mat4);
     if (minUboAlignment > 0) {
@@ -1524,13 +1522,20 @@ void Renderer::prepareDanymicUniformBuffer()
 
 void Renderer::updateUniformBuffer(uint32_t currentImage) 
 {
+    //auto pos = ptr_simulation->models[0]->getPos();
+    //sun.position = glm::vec3(pos[3].x, pos[3].y, 1.0f);
+    
+    Light sun{};
+    sun.color = glm::vec3(1.0, 1.0, 1.0);
+    sun.position = glm::vec3(0.0f, 0.0f, 150.0f);
+    sun.intensity = 100000;
+
     UniformBufferObject ubo{};   
     ubo.model = glm::mat4(1.0f);
     ubo.view = ptr_camera->view;
-    //ubo.view = glm::lookAt(glm::vec3(-100.0f, 1.0f, 50.0f), glm::vec3(-100.0f, 0.0f, 0.0f), glm::vec3(0.0f ,0.0f ,1.0f));
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 500.0f);
     ubo.proj[1][1] *= -1;
-    ubo.lightPos = glm::vec3(0.0f, 0.0f, 350.0f);
+    ubo.sun = sun;
 
     void* data;
     vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(UniformBufferObject), 0, &data);

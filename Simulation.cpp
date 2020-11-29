@@ -28,12 +28,12 @@ void Simulation::initTrafficLights()
 {
 	const std::vector<std::string> trafficLightNames = 
 	{ 
-		"A1-1", "A1-2", "A1-3",	"B1-1",	"B1-2",	"F1-1",	"F1-2",	"V1-1",	"V1-2",	"V1-3",	"V1-4", // 0  - 10 (11)
-		"A2-1",	"A2-2",	"A2-3",	"A2-4",	"F2-1",	"F2-2",	"V2-1",	"V2-2",	"V2-3",	"V2-4",			// 11 - 20 (10)
-		"A3-1",	"A3-2",	"A3-3",	"A3-4",															// 21 - 24 ( 4)
-		"A4-1",	"A4-2",	"A4-3",	"A4-4",	"B4-1",	"F4-1",	"F4-2",	"V4-1",	"V4-2",	"V4-3",	"V4-4",	// 25 - 35 (11)
-		"A5-1",	"A5-2",	"A5-3",	"A5-4",	"F5-1",	"F5-2",	"V5-1",	"V5-2",	"V5-3",	"V5-4",			// 36 - 45 (10)
-		"A6-1",	"A6-2",	"A6-3",	"A6-4"															// 46 - 49 ( 4)
+		"A1-1", "A1-2", "A1-3",	"B1-1",	"B1-2",	"F1-1",	"F1-2",	"V1-1",	"V1-2",	"V1-3",	"V1-4",		// 0  - 10 (11)
+		"A2-1",	"A2-2",	"A2-3",	"A2-4",	"F2-1",	"F2-2",	"V2-1",	"V2-2",	"V2-3",	"V2-4",				// 11 - 20 (10)
+		"A3-1",	"A3-2",	"A3-3",	"A3-4",																// 21 - 24 ( 4)
+		"A4-1",	"A4-2",	"A4-3",	"A4-4",	"B4-1",	"F4-1",	"F4-2",	"V4-1",	"V4-2",	"V4-3",	"V4-4",		// 25 - 35 (11)
+		"A5-1",	"A5-2",	"A5-3",	"A5-4",	"F5-1",	"F5-2",	"V5-1",	"V5-2",	"V5-3",	"V5-4",				// 36 - 45 (10)
+		"A6-1",	"A6-2",	"A6-3",	"A6-4"																// 46 - 49 ( 4)
 	};
 
 	for (size_t i = 0; i < trafficLightNames.size(); i++)
@@ -81,7 +81,9 @@ void Simulation::initRoutes()
 
 	routes[3].addSection(new Straight(glm::vec3(-82.25f, -80.0f, 0.0f), -90.0f, 40.0f));
 	routes[3].addSection(new TrafficLight(glm::vec3(-82.25f, -40.0f, 0.0f), -90, 2.0f, 3, &trafficLights)); // B1-1
-	routes[3].addSection(new End(glm::vec3(0.0f, 0.0f, -10.0f), 0));
+	routes[3].addSection(new Straight(glm::vec3(-82.25f, -38.0f, 0.0f), -90, 29.0f));
+	routes[3].addSection(new Corner(glm::vec3(-82.25f, -9.0f, 0.0f), -90, 19.75f, 90));
+	routes[3].addSection(new Transition(&routes[27]));
 
 	routes[4].addSection(new Straight(glm::vec3(-150.0f, -21.25f, 0.0f), -180, 38.0f));
 	routes[4].addSection(new TrafficLight(glm::vec3(-112.0f, -21.25f, 0.0f), -180, 2.0f, 11, &trafficLights)); // A2-1
@@ -129,7 +131,10 @@ void Simulation::initRoutes()
 
 	routes[12].addSection(new Straight(glm::vec3(68.25f, 80.0f, 0.0f), 90.0f, 34.0f));
 	routes[12].addSection(new TrafficLight(glm::vec3(68.25f, 46.0f, 0.0f), 90, 2.0f, 29, &trafficLights)); // B4-1
-	routes[12].addSection(new End(glm::vec3(0.0f, 0.0f, -10.0f), 0));
+	routes[12].addSection(new Corner(glm::vec3(68.25f, 45.0f, 0.0f), 115.0169f, 7.0f, 25.0169f));
+	routes[12].addSection(new Straight(glm::vec3(70.25f, 43.0f, 0.0f), 115.0169f, 15.0f));
+	routes[12].addSection(new Corner(glm::vec3(70.25f, 33.0f, 0.0f), 115.0169f, 7.0f, -25.0169f));
+	routes[12].addSection(new Transition(&routes[41], &routes[42]));
 
 	routes[13].addSection(new Straight(glm::vec3(150.0f, 10.75f, 0.0f), 0, 38.0f));
 	routes[13].addSection(new TrafficLight(glm::vec3(112.0f, 10.75f, 0.0f), 0, 2.0f, 36, &trafficLights)); // A5-1

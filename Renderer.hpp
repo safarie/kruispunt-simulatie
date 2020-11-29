@@ -116,19 +116,26 @@ namespace std {
     };
 }
 
-//namespace std {
-//    template<> struct hash<Vertex> {
-//        size_t operator()(Vertex const& vertex) const {
-//            return ((((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.normal) << 1)) >> 1) ^ (hash<glm::vec3>()(vertex.normal) << 1)) >> 1 ) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
-//        }
-//    };
-//}
+struct Light {
+    alignas(16) glm::vec3 color;
+    alignas(16) glm::vec3 position;
+    float intensity;                        // NO alignas, causes black screen
+};
 
-struct UniformBufferObject {
+struct UniformBufferObject {        // rename, camera only buffer?
     alignas(16) glm::mat4 model;
     alignas(16) glm::mat4 view;
     alignas(16) glm::mat4 proj;
-    alignas(16) glm::vec3 lightPos;
+    Light sun;
+};
+
+struct UboStaticModels {            // move map model to this buffer?
+    alignas(16) glm::mat4 TLmodel;
+    //alignas(16) glm::mat4 SLmodel;
+};
+
+struct UboLights {
+    Light lights[50];
 };
 
 struct GraphicsPipeLine {
@@ -220,6 +227,7 @@ private:
 
     GraphicsPipeLine vehiclePipeline;
     GraphicsPipeLine junctionPipeline;
+    GraphicsPipeLine staticModelsPipeline;      // remove junction pipeline when moving model to static ubo?
 
     VkCommandPool commandPool;
 
@@ -238,9 +246,11 @@ private:
 
     ModelBuffers vehicleBuffers;
     ModelBuffers junctionBuffers;
+    ModelBuffers staticModelBuffers;
 
     Descriptor vehicleDescriptor;
     Descriptor junctionDescriptor;
+    Descriptor staticModelDescriptor;
 
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkBuffer> dynamicUniformBuffers;
