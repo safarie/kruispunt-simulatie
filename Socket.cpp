@@ -54,6 +54,7 @@ void Socket::sending()
 		float delta = time - previousTime;
 		previousTime = time;
 
+		//dataReceived = false;
 		dataReceived ? interval += delta : interval = 0.0f;
 
 		if (interval <= 5.0)

@@ -27,6 +27,8 @@ public:
     std::vector<IModel*> models;
     std::vector<TrafficLichtInfo> trafficLights;
     std::vector<ModelInfo>* modelInfo;
+    std::vector<glm::vec3> streetLightPos;
+    std::vector<glm::vec3> sidewalkLightPos;
 
     void initSimulator();
     void update(float& delta);
@@ -39,4 +41,5 @@ private:
     void initRoutes();
     void spawn(int vehicleID);
     int random(float first, float last);
+    float timeOut = 9.0f;
 };

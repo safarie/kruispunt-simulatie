@@ -5,6 +5,7 @@
 
 struct TrafficLichtInfo {
 	std::string ID;
+	glm::vec3 position;
 	int traffic;
 	int state;
 };

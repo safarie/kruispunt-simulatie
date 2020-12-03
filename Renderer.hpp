@@ -119,23 +119,17 @@ namespace std {
 struct Light {
     alignas(16) glm::vec3 color;
     alignas(16) glm::vec3 position;
-    float intensity;                        // NO alignas, causes black screen
+    float intensity;                // NO alignas, causes black screen
 };
 
-struct UniformBufferObject {        // rename, camera only buffer?
+struct UniformBufferObject {        // rename, uboCamera?
     alignas(16) glm::mat4 model;
     alignas(16) glm::mat4 view;
     alignas(16) glm::mat4 proj;
-    Light sun;
-};
-
-struct UboStaticModels {            // move map model to this buffer?
-    alignas(16) glm::mat4 TLmodel;
-    //alignas(16) glm::mat4 SLmodel;
 };
 
 struct UboLights {
-    Light lights[50];
+    Light trafficLights[82];
 };
 
 struct GraphicsPipeLine {
@@ -227,7 +221,6 @@ private:
 
     GraphicsPipeLine vehiclePipeline;
     GraphicsPipeLine junctionPipeline;
-    GraphicsPipeLine staticModelsPipeline;      // remove junction pipeline when moving model to static ubo?
 
     VkCommandPool commandPool;
 
@@ -246,15 +239,17 @@ private:
 
     ModelBuffers vehicleBuffers;
     ModelBuffers junctionBuffers;
-    ModelBuffers staticModelBuffers;
 
     Descriptor vehicleDescriptor;
     Descriptor junctionDescriptor;
-    Descriptor staticModelDescriptor;
 
     std::vector<VkBuffer> uniformBuffers;
-    std::vector<VkBuffer> dynamicUniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
+
+    std::vector<VkBuffer> lightBuffers;
+    std::vector<VkDeviceMemory> lightBuffersMemory;
+
+    std::vector<VkBuffer> dynamicUniformBuffers;
     std::vector<VkDeviceMemory> dynamicUniformBuffersMemory;
 
     std::vector<VkCommandBuffer> commandBuffers;
@@ -322,6 +317,7 @@ private:
     void prepareDanymicUniformBuffer();
     void updateUniformBuffer(uint32_t currentImage);
     void updateDynamicUniformBuffer(uint32_t currentImage);
+    void updateUboLights(uint32_t currentImage);
 
     void createImage(uint32_t width, uint32_t height, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
     VkCommandBuffer beginSingleTimeCommands();
