@@ -36,7 +36,7 @@ void main() {
         vec3 H = normalize(L + V);
    
         vec3 diffuse = inColor * ubo.trafficLights[i].color * watt * clamp(dot(N, L), 0,1) / pow(dist, 2.0);
-        vec3 specular = ubo.trafficLights[i].color * vec3(watt) * pow(clamp(dot(N, H), 0,1), 5.0) / pow(dist, 2.0);
+        vec3 specular = inColor * ubo.trafficLights[i].color * vec3(watt) * pow(clamp(dot(N, H), 0,1), 5.0) / pow(dist, 2.0);
 
         fragColor += diffuse + specular;
     }

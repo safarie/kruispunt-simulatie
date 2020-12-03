@@ -698,7 +698,7 @@ void Renderer::loadModels()
     ModelInfo cars{};
     cars.model = "models/Car.obj";
     cars.type = 0;
-    cars.modelCount = 0;
+    cars.modelCount = 140;
     cars.modelSpeed = 14.0f;
     cars.collisionRadius = 3.5f;
     models.push_back(cars);
@@ -706,7 +706,7 @@ void Renderer::loadModels()
     ModelInfo busses{};
     busses.model = "models/Bus.obj";
     busses.type = 1;
-    busses.modelCount = 50;
+    busses.modelCount = 1;
     busses.modelSpeed = 14.0f;
     busses.collisionRadius = 5.0f;
     models.push_back(busses);
@@ -734,7 +734,7 @@ void Renderer::loadModels()
 
     ptr_simulation->modelInfo = &models;
 
-    junctionModelInfo.model = "models/JunctionV3-test.obj";
+    junctionModelInfo.model = "models/JunctionV3-1.obj";
     junctionModelInfo.modelCount = 1;
 
     loadModel(&junctionModelInfo, junctionBuffers);
@@ -1598,8 +1598,11 @@ void Renderer::updateUboLights(uint32_t currentImage) {
 
     for (size_t i = 0; i < tl; i++)
     {
-        ptr_simulation->trafficLights[i].state == 1 ? trafficLight.color = glm::vec3(0.0f, 1.0f, 0.0f) : trafficLight.color = glm::vec3(1.0f, 0.0f, 0.0f);
-        trafficLight.position = ptr_simulation->trafficLights[i].position;
+        auto pos = ptr_simulation->trafficLights[i].position;
+        auto state = ptr_simulation->trafficLights[i].state;
+        state == 1 ? trafficLight.color = glm::vec3(0.0f, 1.0f, 0.0f) : trafficLight.color = glm::vec3(1.0f, 0.0f, 0.0f);
+        state == 1 ? pos.z += -0.225 : pos.z += 0.225;
+        trafficLight.position = pos;
         
         ubo.trafficLights[i] = trafficLight;
     }

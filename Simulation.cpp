@@ -76,16 +76,16 @@ void Simulation::initTrafficLights()
 		glm::vec3(50.0f, -1.0f, SL_Z), glm::vec3(50.0f, 1.0f, SL_Z),
 		glm::vec3(-25.0f, -16.0f, SL_Z), glm::vec3(-25.0f, 16.0f, SL_Z),
 		glm::vec3(25.0f, -16.0f, SL_Z), glm::vec3(25.0f, 16.0f, SL_Z),
-		glm::vec3(-125.0f, -24.0f, SL_Z), glm::vec3(-150.0f, -8.0f, SL_Z), glm::vec3(-125.0f, 17.0f, SL_Z),
-		glm::vec3(125.0f, 24.0f, SL_Z), glm::vec3(150.0f, 8.0f, SL_Z), glm::vec3(125.0f, -17.0f, SL_Z),
-		glm::vec3(-85.0f, -55.0f, SL_Z), glm::vec3(-87.0f, -55.0f, SL_Z), glm::vec3(-69.0f, -80.0f, SL_Z),
-		glm::vec3(85.0f, 55.0f, SL_Z), glm::vec3(87.0f, 55.0f, SL_Z), glm::vec3(63.5f, 80.0f, SL_Z)
+		glm::vec3(-125.0f, -24.0f, SL_Z), glm::vec3(-150.0f, -9.0f, SL_Z), glm::vec3(-125.0f, 17.0f, SL_Z),
+		glm::vec3(125.0f, 24.0f, SL_Z), glm::vec3(150.0f, 9.0f, SL_Z), glm::vec3(125.0f, -17.0f, SL_Z),
+		glm::vec3(-85.0f, -55.0f, SL_Z), glm::vec3(-87.0f, -55.0f, SL_Z), glm::vec3(-70.0f, -80.0f, SL_Z),
+		glm::vec3(85.0f, 55.0f, SL_Z), glm::vec3(87.0f, 55.0f, SL_Z), glm::vec3(65.0f, 80.0f, SL_Z)
 	};
 
 	const float LZ = 3.5f;
 	sidewalkLightPos = {
-		glm::vec3(-45.0f, -37.0f, LZ), glm::vec3(-15.0f, -37.0f, LZ),  glm::vec3(15.0f, -37.0f, LZ),  glm::vec3(45.0f, -37.0f, LZ),  glm::vec3(75.0f, -37.0f, LZ),
-		glm::vec3(-75.0f, 37.0f, LZ), glm::vec3(-45.0f, 37.0f, LZ), glm::vec3(-15.0f, 37.0f, LZ),  glm::vec3(15.0f, 37.0f, LZ),  glm::vec3(45.0f, 37.0f, LZ)
+		glm::vec3(-45.0f, -36.0f, LZ), glm::vec3(-15.0f, -36.0f, LZ),  glm::vec3(15.0f, -36.0f, LZ),  glm::vec3(45.0f, -36.0f, LZ),  glm::vec3(75.0f, -36.0f, LZ),
+		glm::vec3(-75.0f, 36.0f, LZ), glm::vec3(-45.0f, 36.0f, LZ), glm::vec3(-15.0f, 36.0f, LZ),  glm::vec3(15.0f, 36.0f, LZ),  glm::vec3(45.0f, 36.0f, LZ)
 	};
 
 	for (size_t i = 0; i < trafficLightNames.size(); i++)
@@ -133,14 +133,15 @@ void Simulation::initRoutes()
 	routes[2].addSection(new Transition(&routes[28]));
 
 	routes[3].addSection(new Straight(glm::vec3(-82.25f, -80.0f, 0.0f), -90.0f, 40.0f));
-	routes[3].addSection(new TrafficLight(glm::vec3(-82.25f, -40.0f, 0.0f), -90, 2.0f, 3, &trafficLights)); // B1-1 & B1-2
 	routes[3].addSection(new Transition(&routes[177], &routes[178]));
 
+	routes[177].addSection(new TrafficLight(glm::vec3(-82.25f, -40.0f, 0.0f), -90, 2.0f, 3, &trafficLights)); // B1-1
 	routes[177].addSection(new Straight(glm::vec3(-82.25f, -38.0f, 0.0f), -90, 19.0f));
 	routes[177].addSection(new Corner(glm::vec3(-82.25f, -19.0f, 0.0f), -90, 11.75f, -90.0f));
 	routes[177].addSection(new Straight(glm::vec3(-70.5f, -7.25f, 0.0f), -180, 10.5f));
 	routes[177].addSection(new Transition(&routes[19]));
 
+	routes[178].addSection(new TrafficLight(glm::vec3(-82.25f, -40.0f, 0.0f), -90, 2.0f, 4, &trafficLights)); // B1-2
 	routes[178].addSection(new Straight(glm::vec3(-82.25f, -38.0f, 0.0f), -90, 29.0f));
 	routes[178].addSection(new Corner(glm::vec3(-82.25f, -9.0f, 0.0f), -90, 19.75f, 90));
 	routes[178].addSection(new Transition(&routes[27]));
