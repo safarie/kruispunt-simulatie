@@ -385,7 +385,14 @@ void Renderer::createDescriptorSetLayout()
     samplerLayoutBinding.pImmutableSamplers = nullptr;
     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    std::array<VkDescriptorSetLayoutBinding, 3> vehicleBindings = { uboLayoutBinding, duboLayoutBinding, samplerLayoutBinding };
+    VkDescriptorSetLayoutBinding uboLightsLayoutBinding{};
+    uboLightsLayoutBinding.binding = 3;
+    uboLightsLayoutBinding.descriptorCount = 1;
+    uboLightsLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uboLightsLayoutBinding.pImmutableSamplers = nullptr;
+    uboLightsLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    std::array<VkDescriptorSetLayoutBinding, 4> vehicleBindings = { uboLayoutBinding, duboLayoutBinding, samplerLayoutBinding, uboLightsLayoutBinding };
     VkDescriptorSetLayoutCreateInfo vehicleLayoutInfo{};
     vehicleLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     vehicleLayoutInfo.bindingCount = static_cast<uint32_t>(vehicleBindings.size());
@@ -395,7 +402,7 @@ void Renderer::createDescriptorSetLayout()
         throw std::runtime_error("failed to create descriptor set layout!");
     }
 
-    std::array<VkDescriptorSetLayoutBinding, 2> junctionBindings = { uboLayoutBinding, samplerLayoutBinding };
+    std::array<VkDescriptorSetLayoutBinding, 3> junctionBindings = { uboLayoutBinding, samplerLayoutBinding, uboLightsLayoutBinding };
     VkDescriptorSetLayoutCreateInfo junctionLayoutInfo{};
     junctionLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     junctionLayoutInfo.bindingCount = static_cast<uint32_t>(junctionBindings.size());
@@ -699,7 +706,7 @@ void Renderer::loadModels()
     ModelInfo busses{};
     busses.model = "models/Bus.obj";
     busses.type = 1;
-    busses.modelCount = 5;
+    busses.modelCount = 1;
     busses.modelSpeed = 14.0f;
     busses.collisionRadius = 5.0f;
     models.push_back(busses);
@@ -707,7 +714,7 @@ void Renderer::loadModels()
     ModelInfo bicycles{};
     bicycles.model = "models/Bicycle.obj";
     bicycles.type = 2;
-    bicycles.modelCount = 50;
+    bicycles.modelCount = 25;
     bicycles.modelSpeed = 5.5f;
     bicycles.collisionRadius = 1.25f;
     models.push_back(bicycles);
@@ -715,8 +722,8 @@ void Renderer::loadModels()
     ModelInfo pedestrians{};
     pedestrians.model = "models/Pedestrian.obj";
     pedestrians.type = 3;
-    pedestrians.modelCount = 50;
-    pedestrians.modelSpeed = 1.5;
+    pedestrians.modelCount = 25;
+    pedestrians.modelSpeed = 1.8;
     pedestrians.collisionRadius = 0.5;
     models.push_back(pedestrians);
 
@@ -727,7 +734,7 @@ void Renderer::loadModels()
 
     ptr_simulation->modelInfo = &models;
 
-    junctionModelInfo.model = "models/JunctionV3.obj";
+    junctionModelInfo.model = "models/JunctionV3-1.obj";
     junctionModelInfo.modelCount = 1;
 
     loadModel(&junctionModelInfo, junctionBuffers);
@@ -749,15 +756,20 @@ void Renderer::createUniformBuffers()
 {
     prepareDanymicUniformBuffer();
 
+    VkDeviceSize lightsBufferSize = sizeof(UboLights);
+    lightBuffers.resize(swapChainImages.size());
+    lightBuffersMemory.resize(swapChainImages.size());
+    
     VkDeviceSize uniformBufferSize = sizeof(UniformBufferObject);
-    VkDeviceSize dynamicUniformBufferSize = totalModelInstances * dynamicAlignment;
-
     uniformBuffers.resize(swapChainImages.size());
-    dynamicUniformBuffers.resize(swapChainImages.size());
     uniformBuffersMemory.resize(swapChainImages.size());
+
+    VkDeviceSize dynamicUniformBufferSize = totalModelInstances * dynamicAlignment;
+    dynamicUniformBuffers.resize(swapChainImages.size());
     dynamicUniformBuffersMemory.resize(swapChainImages.size());
 
     for (size_t i = 0; i < swapChainImages.size(); i++) {
+        createBuffer(lightsBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, lightBuffers[i], lightBuffersMemory[i]);
         createBuffer(uniformBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
         createBuffer(dynamicUniformBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, dynamicUniformBuffers[i], dynamicUniformBuffersMemory[i]);
     }
@@ -777,10 +789,15 @@ void Renderer::createDescriptorPool()
     combinedImageSampler.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     combinedImageSampler.descriptorCount = static_cast<uint32_t>(swapChainImages.size());
 
-    std::array<VkDescriptorPoolSize, 3> vehilcePoolSizes{};
+    VkDescriptorPoolSize lightsBuffer{};
+    lightsBuffer.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    lightsBuffer.descriptorCount = static_cast<uint32_t>(swapChainImages.size());
+
+    std::array<VkDescriptorPoolSize, 4> vehilcePoolSizes{};
     vehilcePoolSizes[0] = uniformBuffer;
     vehilcePoolSizes[1] = uniformBufferDynamic;
     vehilcePoolSizes[2] = combinedImageSampler;
+    vehilcePoolSizes[3] = lightsBuffer;
 
     VkDescriptorPoolCreateInfo vehiclePoolInfo{};
     vehiclePoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -792,9 +809,10 @@ void Renderer::createDescriptorPool()
         throw std::runtime_error("failed to create descriptor pool!");
     }
 
-    std::array<VkDescriptorPoolSize, 2> junctionPoolSizes{};
+    std::array<VkDescriptorPoolSize, 3> junctionPoolSizes{};
     junctionPoolSizes[0] = uniformBuffer;
     junctionPoolSizes[1] = combinedImageSampler;
+    junctionPoolSizes[2] = lightsBuffer;
 
     VkDescriptorPoolCreateInfo junctionPoolInfo{};
     junctionPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -851,45 +869,62 @@ void Renderer::createDescriptorSets()
         imageInfo.imageView = textureImageView;
         imageInfo.sampler = textureSampler;
 
-        VkWriteDescriptorSet uniformBuffer{};
-        uniformBuffer.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        uniformBuffer.dstSet = vehicleDescriptor.set[i];
-        uniformBuffer.dstBinding = 0;
-        uniformBuffer.dstArrayElement = 0;
-        uniformBuffer.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        uniformBuffer.descriptorCount = 1;
-        uniformBuffer.pBufferInfo = &uniformBufferInfo;
+        VkDescriptorBufferInfo lightsBufferInfo{};
+        lightsBufferInfo.buffer = lightBuffers[i];
+        lightsBufferInfo.offset = 0;
+        lightsBufferInfo.range = sizeof(UboLights);
 
-        VkWriteDescriptorSet uniformBufferDynamic{};
-        uniformBufferDynamic.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        uniformBufferDynamic.dstSet = vehicleDescriptor.set[i];
-        uniformBufferDynamic.dstBinding = 1;
-        uniformBufferDynamic.dstArrayElement = 0;
-        uniformBufferDynamic.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-        uniformBufferDynamic.descriptorCount = 1;
-        uniformBufferDynamic.pBufferInfo = &dynamicUniformBufferInfo;
+        VkWriteDescriptorSet uniformBufferSet{};
+        uniformBufferSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        uniformBufferSet.dstSet = vehicleDescriptor.set[i];
+        uniformBufferSet.dstBinding = 0;
+        uniformBufferSet.dstArrayElement = 0;
+        uniformBufferSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        uniformBufferSet.descriptorCount = 1;
+        uniformBufferSet.pBufferInfo = &uniformBufferInfo;
 
-        VkWriteDescriptorSet combinedImageSampler{};
-        combinedImageSampler.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        combinedImageSampler.dstSet = vehicleDescriptor.set[i];
-        combinedImageSampler.dstBinding = 2;
-        combinedImageSampler.dstArrayElement = 0;
-        combinedImageSampler.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        combinedImageSampler.descriptorCount = 1;
-        combinedImageSampler.pImageInfo = &imageInfo;
+        VkWriteDescriptorSet dynamicUniformBufferSet{};
+        dynamicUniformBufferSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        dynamicUniformBufferSet.dstSet = vehicleDescriptor.set[i];
+        dynamicUniformBufferSet.dstBinding = 1;
+        dynamicUniformBufferSet.dstArrayElement = 0;
+        dynamicUniformBufferSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        dynamicUniformBufferSet.descriptorCount = 1;
+        dynamicUniformBufferSet.pBufferInfo = &dynamicUniformBufferInfo;
 
-        std::array<VkWriteDescriptorSet, 3> vehicleDescriptorWrites{};
-        vehicleDescriptorWrites[0] = uniformBuffer;
-        vehicleDescriptorWrites[1] = uniformBufferDynamic;
-        vehicleDescriptorWrites[2] = combinedImageSampler;
+        VkWriteDescriptorSet combinedImageSamplerSet{};
+        combinedImageSamplerSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        combinedImageSamplerSet.dstSet = vehicleDescriptor.set[i];
+        combinedImageSamplerSet.dstBinding = 2;
+        combinedImageSamplerSet.dstArrayElement = 0;
+        combinedImageSamplerSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        combinedImageSamplerSet.descriptorCount = 1;
+        combinedImageSamplerSet.pImageInfo = &imageInfo;
+
+        VkWriteDescriptorSet lightsBufferSet{};
+        lightsBufferSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        lightsBufferSet.dstSet = vehicleDescriptor.set[i];
+        lightsBufferSet.dstBinding = 3;
+        lightsBufferSet.dstArrayElement = 0;
+        lightsBufferSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        lightsBufferSet.descriptorCount = 1;
+        lightsBufferSet.pBufferInfo = &lightsBufferInfo;
+
+        std::array<VkWriteDescriptorSet, 4> vehicleDescriptorWrites{};
+        vehicleDescriptorWrites[0] = uniformBufferSet;
+        vehicleDescriptorWrites[1] = dynamicUniformBufferSet;
+        vehicleDescriptorWrites[2] = combinedImageSamplerSet;
+        vehicleDescriptorWrites[3] = lightsBufferSet;
 
         vkUpdateDescriptorSets(device, static_cast<uint32_t>(vehicleDescriptorWrites.size()), vehicleDescriptorWrites.data(), 0, nullptr);
 
-        std::array<VkWriteDescriptorSet, 2> junctionDescriptorWrites{};
-        junctionDescriptorWrites[0] = uniformBuffer;
+        std::array<VkWriteDescriptorSet, 3> junctionDescriptorWrites{};
+        junctionDescriptorWrites[0] = uniformBufferSet;
         junctionDescriptorWrites[0].dstSet = junctionDescriptor.set[i];
-        junctionDescriptorWrites[1] = combinedImageSampler;
+        junctionDescriptorWrites[1] = combinedImageSamplerSet;
         junctionDescriptorWrites[1].dstSet = junctionDescriptor.set[i];
+        junctionDescriptorWrites[2] = lightsBufferSet;
+        junctionDescriptorWrites[2].dstSet = junctionDescriptor.set[i];
 
         vkUpdateDescriptorSets(device, static_cast<uint32_t>(junctionDescriptorWrites.size()), junctionDescriptorWrites.data(), 0, nullptr);
     }
@@ -964,7 +999,7 @@ void Renderer::createCommandBuffers()
 
         vkCmdBindIndexBuffer(commandBuffers[i], junctionBuffers.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-        vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, junctionPipeline.Layout, 0, 1, &junctionDescriptor.set[i], 0, 0); // create special set for junction
+        vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, junctionPipeline.Layout, 0, 1, &junctionDescriptor.set[i], 0, 0);
 
         vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(junctionModelInfo.indicesCount), 1, 0, 0, 0);
 
@@ -1015,6 +1050,7 @@ void Renderer::drawFrame() {
 
     updateUniformBuffer(imageIndex);
     updateDynamicUniformBuffer(imageIndex);
+    updateUboLights(imageIndex);
 
     if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
         vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
@@ -1505,11 +1541,9 @@ void Renderer::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize s
 }
 
 
-// uniform buffer
+// uniform buffers
 void Renderer::prepareDanymicUniformBuffer()
 {
-    //vkGetPhysicalDeviceProperties(physicalDevice, &gpuProperties);
-
     size_t minUboAlignment = gpuProperties.limits.minUniformBufferOffsetAlignment;
     dynamicAlignment = sizeof(glm::mat4);
     if (minUboAlignment > 0) {
@@ -1527,10 +1561,8 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
     UniformBufferObject ubo{};   
     ubo.model = glm::mat4(1.0f);
     ubo.view = ptr_camera->view;
-    //ubo.view = glm::lookAt(glm::vec3(-100.0f, 1.0f, 50.0f), glm::vec3(-100.0f, 0.0f, 0.0f), glm::vec3(0.0f ,0.0f ,1.0f));
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 500.0f);
     ubo.proj[1][1] *= -1;
-    ubo.lightPos = glm::vec3(0.0f, 0.0f, 350.0f);
 
     void* data;
     vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(UniformBufferObject), 0, &data);
@@ -1550,6 +1582,57 @@ void Renderer::updateDynamicUniformBuffer(uint32_t currentImage)
     vkMapMemory(device, dynamicUniformBuffersMemory[currentImage], 0, totalModelInstances * dynamicAlignment, 0, &data);
     memcpy(data, dubo.model, totalModelInstances * dynamicAlignment);
     vkUnmapMemory(device, dynamicUniformBuffersMemory[currentImage]);
+}
+
+void Renderer::updateUboLights(uint32_t currentImage) {
+    
+    int totalLights = 0;
+    int tl = ptr_simulation->trafficLights.size();
+    int sl = ptr_simulation->streetLightPos.size();
+    int swl = ptr_simulation->sidewalkLightPos.size();
+
+    Light trafficLight{};
+    trafficLight.intensity = 1.0;
+    
+    UboLights ubo{};
+
+    for (size_t i = 0; i < tl; i++)
+    {
+        auto pos = ptr_simulation->trafficLights[i].position;
+        auto state = ptr_simulation->trafficLights[i].state;
+        state == 1 ? trafficLight.color = glm::vec3(0.0f, 1.0f, 0.0f) : trafficLight.color = glm::vec3(1.0f, 0.0f, 0.0f);
+        state == 1 ? pos.z += -0.225 : pos.z += 0.225;
+        trafficLight.position = pos;
+        
+        ubo.trafficLights[i] = trafficLight;
+    }
+    totalLights += tl;
+
+    Light streetLight{};
+    streetLight.color = glm::vec3(0.741f, 0.732f, 0.675f);
+    streetLight.intensity = 50.0;
+
+    for (size_t i = 0; i < sl; i++)
+    {
+        streetLight.position = ptr_simulation->streetLightPos[i];
+        ubo.trafficLights[i + totalLights] = streetLight;
+    }
+    totalLights += sl;
+
+    Light sidewalkLight{};
+    sidewalkLight.color = glm::vec3(0.675f, 0.723f, 0.741f);
+    sidewalkLight.intensity = 15.0;
+
+    for (size_t i = 0; i < swl; i++)
+    {
+        sidewalkLight.position = ptr_simulation->sidewalkLightPos[i];
+        ubo.trafficLights[i + totalLights] = sidewalkLight;
+    }
+
+    void* data;
+    vkMapMemory(device, lightBuffersMemory[currentImage], 0, sizeof(UboLights), 0, &data);
+    memcpy(data, &ubo, sizeof(UboLights));
+    vkUnmapMemory(device, lightBuffersMemory[currentImage]);
 }
 
 

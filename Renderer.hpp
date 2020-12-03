@@ -116,19 +116,20 @@ namespace std {
     };
 }
 
-//namespace std {
-//    template<> struct hash<Vertex> {
-//        size_t operator()(Vertex const& vertex) const {
-//            return ((((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.normal) << 1)) >> 1) ^ (hash<glm::vec3>()(vertex.normal) << 1)) >> 1 ) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
-//        }
-//    };
-//}
+struct Light {
+    alignas(16) glm::vec3 color;
+    alignas(16) glm::vec3 position;
+    float intensity;                // NO alignas, causes black screen
+};
 
-struct UniformBufferObject {
+struct UniformBufferObject {        // rename, uboCamera?
     alignas(16) glm::mat4 model;
     alignas(16) glm::mat4 view;
     alignas(16) glm::mat4 proj;
-    alignas(16) glm::vec3 lightPos;
+};
+
+struct UboLights {
+    Light trafficLights[82];
 };
 
 struct GraphicsPipeLine {
@@ -243,8 +244,12 @@ private:
     Descriptor junctionDescriptor;
 
     std::vector<VkBuffer> uniformBuffers;
-    std::vector<VkBuffer> dynamicUniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
+
+    std::vector<VkBuffer> lightBuffers;
+    std::vector<VkDeviceMemory> lightBuffersMemory;
+
+    std::vector<VkBuffer> dynamicUniformBuffers;
     std::vector<VkDeviceMemory> dynamicUniformBuffersMemory;
 
     std::vector<VkCommandBuffer> commandBuffers;
@@ -312,6 +317,7 @@ private:
     void prepareDanymicUniformBuffer();
     void updateUniformBuffer(uint32_t currentImage);
     void updateDynamicUniformBuffer(uint32_t currentImage);
+    void updateUboLights(uint32_t currentImage);
 
     void createImage(uint32_t width, uint32_t height, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
     VkCommandBuffer beginSingleTimeCommands();
