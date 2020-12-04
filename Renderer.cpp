@@ -695,13 +695,45 @@ void Renderer::createTextureSampler()
 
 void Renderer::loadModels()
 {
-    ModelInfo cars{};
-    cars.model = "models/Car.obj";
-    cars.type = 0;
-    cars.modelCount = 140;
-    cars.modelSpeed = 14.0f;
-    cars.collisionRadius = 3.5f;
-    models.push_back(cars);
+    ModelInfo cars_y{};
+    cars_y.model = "models/Car_y.obj";
+    cars_y.type = 0;
+    cars_y.modelCount = 25;
+    cars_y.modelSpeed = 14.0f;
+    cars_y.collisionRadius = 3.0f;
+    models.push_back(cars_y);
+
+    ModelInfo cars_p{};
+    cars_p.model = "models/Car_p.obj";
+    cars_p.type = 0;
+    cars_p.modelCount = 25;
+    cars_p.modelSpeed = 14.0f;
+    cars_p.collisionRadius = 3.0f;
+    models.push_back(cars_p);
+    
+    ModelInfo cars_g{};
+    cars_g.model = "models/Car_g.obj";
+    cars_g.type = 0;
+    cars_g.modelCount = 25;
+    cars_g.modelSpeed = 14.0f;
+    cars_g.collisionRadius = 3.0f;
+    models.push_back(cars_g);
+
+    ModelInfo cars_b{};
+    cars_b.model = "models/Car_b.obj";
+    cars_b.type = 0;
+    cars_b.modelCount = 25;
+    cars_b.modelSpeed = 14.0f;
+    cars_b.collisionRadius = 3.0f;
+    models.push_back(cars_b);
+
+    ModelInfo cars_r{};
+    cars_r.model = "models/Car_r.obj";
+    cars_r.type = 0;
+    cars_r.modelCount = 25;
+    cars_r.modelSpeed = 14.0f;
+    cars_r.collisionRadius = 3.0f;
+    models.push_back(cars_r);
 
     ModelInfo busses{};
     busses.model = "models/Bus.obj";
