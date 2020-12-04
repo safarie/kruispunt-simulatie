@@ -57,7 +57,7 @@ void Simulation::initTrafficLights()
 		// Series 3
 		glm::vec3(-78.0f, 3.75f, VZ), glm::vec3(-78.0f, 7.25f, VZ), glm::vec3(-78.0f, 10.75f, VZ), glm::vec3(-78.0f, 14.25f, VZ),
 		// Series 4
-		glm::vec3(71.75f, 28.0f, VZ), glm::vec3(75.25f, 28.0f, VZ), glm::vec3(78.75f, 28.0f, VZ), glm::vec3(81.75f, 28.0f, VZ),
+		glm::vec3(81.75f, 28.0f, VZ), glm::vec3(78.75f, 28.0f, VZ), glm::vec3(75.25f, 28.0f, VZ), glm::vec3(71.75f, 28.0f, VZ),
 		glm::vec3(68.0f, 36.0f, 2.5f), glm::vec3(95.3f, 34.125f, BZ), glm::vec3(69.7f, 29.875f, BZ),
 		glm::vec3(95.3f, 36.875f, PZ), glm::vec3(87.7f, 34.075f, PZ), glm::vec3(84.3f, 36.875f, PZ), glm::vec3(69.7f, 34.125f, PZ),
 		// Series 5
