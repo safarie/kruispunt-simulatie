@@ -55,7 +55,7 @@ void Simulation::initTrafficLights()
 		glm::vec3(-101.875f, -23.3f, BZ), glm::vec3(-106.125f, 16.3f, BZ),
 		glm::vec3(-106.125f, -23.3f, PZ), glm::vec3(-107.875f, -8.7f, PZ), glm::vec3(-106.075f, 8.7f, PZ), glm::vec3(-107.875f, 16.3f, PZ),												//2
 		// Series 3
-		glm::vec3(-72.0f, 3.75f, VZ), glm::vec3(-72.0f, 7.25f, VZ), glm::vec3(-72.0f, 10.75f, VZ), glm::vec3(-72.0f, 14.25f, VZ),
+		glm::vec3(-78.0f, 3.75f, VZ), glm::vec3(-78.0f, 7.25f, VZ), glm::vec3(-78.0f, 10.75f, VZ), glm::vec3(-78.0f, 14.25f, VZ),
 		// Series 4
 		glm::vec3(71.75f, 28.0f, VZ), glm::vec3(75.25f, 28.0f, VZ), glm::vec3(78.75f, 28.0f, VZ), glm::vec3(81.75f, 28.0f, VZ),
 		glm::vec3(68.0f, 36.0f, 2.5f), glm::vec3(95.3f, 34.125f, BZ), glm::vec3(69.7f, 29.875f, BZ),
@@ -65,7 +65,7 @@ void Simulation::initTrafficLights()
 		glm::vec3(106.125f, -16.3f, BZ), glm::vec3(101.875f, 23.3f, BZ),
 		glm::vec3(107.875f, -16.3f, PZ), glm::vec3(106.075f, -8.7f, PZ), glm::vec3(107.875f, 8.7f, PZ), glm::vec3(106.125f, 23.3f, PZ),
 		// Series 6
-		glm::vec3(72.0f, -14.25f, VZ), glm::vec3(72.0f, -10.75f, VZ), glm::vec3(72.0f, -7.25f, VZ), glm::vec3(72.0f, -3.75f, VZ),
+		glm::vec3(78.0f, -14.25f, VZ), glm::vec3(78.0f, -10.75f, VZ), glm::vec3(78.0f, -7.25f, VZ), glm::vec3(78.0f, -3.75f, VZ),
 	};
 
 	const float SL_Z = 7.0f;
@@ -789,10 +789,12 @@ void Simulation::initRoutes()
 void Simulation::initTraffic()
 {
 	int totalModelCount = 0;
+	float randomCollision;
 	for (auto mi : *modelInfo) {
 		for (uint32_t i = totalModelCount; i < mi.modelCount + totalModelCount; i++)
 		{
-			models.push_back(new Vehicle(i, mi.type, mi.modelSpeed, mi.collisionRadius));
+			randomCollision = random(0.0f, 2.5f);
+			models.push_back(new Vehicle(i, mi.type, mi.modelSpeed, mi.collisionRadius + (mi.type < 2 ? randomCollision : 0.0f)));
 		}
 		totalModelCount += mi.modelCount;
 	}
@@ -802,10 +804,10 @@ void Simulation::spawn(int vehicleID)
 {
 	int type = models.at(vehicleID)->getType();
 	int size = spawnRoutes[type].size();
-	routes[spawnRoutes[type][random(0, size)]].addModel(vehicleID);
+	routes[spawnRoutes[type][(int)random(0, size)]].addModel(vehicleID);
 }
 
-int Simulation::random(float first, float last)
+float Simulation::random(float first, float last)
 {
 	std::uniform_real_distribution<float> distribution(first, last);
 	std::random_device rd;

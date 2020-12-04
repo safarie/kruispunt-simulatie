@@ -40,6 +40,6 @@ private:
     void initTrafficLights();
     void initRoutes();
     void spawn(int vehicleID);
-    int random(float first, float last);
+    float random(float first, float last);
     float timeOut = 9.0f;
 };
