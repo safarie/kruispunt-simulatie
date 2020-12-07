@@ -5,6 +5,10 @@
 #include "Camera.hpp"
 #include <thread>
 
+/// <summary>
+/// instructions on how to start the intire app
+/// </summary>
+/// <returns></returns>
 int main()
 {
     std::shared_ptr<Camera> ptr_camera(new Camera);

@@ -1,5 +1,8 @@
 #include "Simulation.hpp"
 
+/// <summary>
+/// initialization of static data
+/// </summary>
 void Simulation::initSimulator()
 {
 	initTrafficLights();
@@ -7,6 +10,10 @@ void Simulation::initSimulator()
 	initTraffic();
 }
 
+/// <summary>
+/// update all routes
+/// </summary>
+/// <param name="delta">time past sins last frame</param>
 void Simulation::update(float &delta) 
 {
 	for (Route &route : routes)
@@ -15,6 +22,10 @@ void Simulation::update(float &delta)
 	}
 }
 
+/// <summary>
+/// after the main update check if there any "idle" vehicles and respawn them at 10 sec intervals
+/// </summary>
+/// <param name="delta">time past sins last frame</param>
 void Simulation::lateUpdate(float& delta) 
 { 
 	if (timeOut < 10.f)
@@ -30,6 +41,9 @@ void Simulation::lateUpdate(float& delta)
 	}
 }
 
+/// <summary>
+/// setup all trafficlights and streetlight positions
+/// </summary>
 void Simulation::initTrafficLights()
 {
 	const std::vector<std::string> trafficLightNames = 
@@ -99,6 +113,9 @@ void Simulation::initTrafficLights()
 	}
 }
 
+/// <summary>
+/// setup all routes for traffic to follow
+/// </summary>
 void Simulation::initRoutes()
 {
 	for (size_t i = 0; i < 179; i++)
@@ -786,6 +803,9 @@ void Simulation::initRoutes()
 	routes[176].addSection(new Transition(&routes[124]));
 }
 
+/// <summary>
+/// create all vehicles (logic)
+/// </summary>
 void Simulation::initTraffic()
 {
 	int totalModelCount = 0;
@@ -800,6 +820,10 @@ void Simulation::initTraffic()
 	}
 }
 
+/// <summary>
+/// spawn the indicated vehicle on a random spawnroute
+/// </summary>
+/// <param name="vehicleID"></param>
 void Simulation::spawn(int vehicleID)
 {
 	int type = models.at(vehicleID)->getType();
@@ -807,6 +831,12 @@ void Simulation::spawn(int vehicleID)
 	routes[spawnRoutes[type][(int)random(0, size)]].addModel(vehicleID);
 }
 
+/// <summary>
+/// random fuction
+/// </summary>
+/// <param name="first">first value</param>
+/// <param name="last">last value</param>
+/// <returns>returns a random float between the first and last values</returns>
 float Simulation::random(float first, float last)
 {
 	std::uniform_real_distribution<float> distribution(first, last);

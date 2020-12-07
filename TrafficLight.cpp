@@ -1,5 +1,13 @@
 #include "TrafficLight.hpp"
 
+/// <summary>
+/// contructor
+/// </summary>
+/// <param name="startPos">start position</param>
+/// <param name="direction">facing direction of the vehicle in degree</param>
+/// <param name="length">length of the check zone in meters</param>
+/// <param name="trafficLight">traffic light ID</param>
+/// <param name="ptr_trafficLights">ptr to list of traffic lights</param>
 TrafficLight::TrafficLight(glm::vec3 startPos, float direction, float length, int trafficLight, std::vector<TrafficLichtInfo>* ptr_trafficLights)
 {
 	this->length = length;
@@ -10,6 +18,13 @@ TrafficLight::TrafficLight(glm::vec3 startPos, float direction, float length, in
 	start = glm::rotate(start, glm::radians(direction), glm::vec3(0.0f, 0.0f, 1.0f));
 }
 
+/// <summary>
+/// update the given vehicle
+/// </summary>
+/// <param name="delta">time past since last frame</param>
+/// <param name="model">model(vehicle) to update</param>
+/// <param name="section">current section number</param>
+/// <returns>next section number</returns>
 int TrafficLight::update(float& delta, IModel* model, int section)
 {
 	glm::mat4* modelMat = &model->getPos();

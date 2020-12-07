@@ -1,11 +1,20 @@
 #include "Transition.hpp"
 
+/// <summary>
+/// contructor
+/// </summary>
+/// <param name="trans1">first route to transtiton to</param>
 Transition::Transition(Route* trans1)
 {
     this->transition1 = trans1;
     this->split = false;
 }
 
+/// <summary>
+/// constructor overload
+/// </summary>
+/// <param name="trans1">first route to transtiton to</param>
+/// <param name="trans2">second route to transtiton to</param>
 Transition::Transition(Route* trans1, Route* trans2)
 {
     this->transition1 = trans1;
@@ -13,6 +22,12 @@ Transition::Transition(Route* trans1, Route* trans2)
     this->split = true;
 }
 
+/// <summary>
+/// constructor overload
+/// </summary>
+/// <param name="trans1">first route to transtiton to</param>
+/// <param name="trans2">second route to transtiton to</param>
+/// <param name="trans3">third route to transtiton to</param>
 Transition::Transition(Route* trans1, Route* trans2, Route* trans3)
 {
     this->transition1 = trans1;
@@ -21,6 +36,13 @@ Transition::Transition(Route* trans1, Route* trans2, Route* trans3)
     this->split = true;
 }
 
+/// <summary>
+/// update the given vehicle
+/// </summary>
+/// <param name="delta">time past since last frame</param>
+/// <param name="model">model(vehicle) to update</param>
+/// <param name="section">current section number</param>
+/// <returns>next section number</returns>
 int Transition::update(float& delta, IModel* model, int section)
 {
     if (!split) {
@@ -45,6 +67,10 @@ int Transition::update(float& delta, IModel* model, int section)
     }
 }
 
+/// <summary>
+/// randomizer
+/// </summary>
+/// <returns>random int between 1, 12</returns>
 int Transition::random()
 {
     std::uniform_real_distribution<float> distribution(1.0f, 12.0f);

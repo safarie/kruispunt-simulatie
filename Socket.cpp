@@ -1,5 +1,9 @@
 #include "Socket.hpp"
 
+/// <summary>
+/// Set up connection with a controller
+/// </summary>
+/// <returns>ture when succeeded</returns>
 bool Socket::connecting()
 {
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
@@ -41,6 +45,9 @@ bool Socket::connecting()
 	return true;
 }
 
+/// <summary>
+/// this function is running on a seperate thread sending back traffic position every 5 seconds
+/// </summary>
 void Socket::sending()
 {
 	float previousTime = 0.0f;
@@ -79,6 +86,9 @@ void Socket::sending()
 	}
 }
 
+/// <summary>
+/// on a seperate thread listen for incomming trafficlight updates
+/// </summary>
 void Socket::receiving()
 {
 	while (isRunning) 
@@ -99,6 +109,10 @@ void Socket::receiving()
 	};
 }
 
+/// <summary>
+/// goes through the list of trafficlights and checks if theres traffic waiting
+/// </summary>
+/// <returns>json string with waiting traffic</returns>
 std::string Socket::getTraffic()
 {
 	rapidjson::Document doc;
@@ -117,6 +131,9 @@ std::string Socket::getTraffic()
 	return buffer.GetString();
 }
 
+/// <summary>
+/// goes throeg the list with trafficlights and updates the light states based on the received data
+/// </summary>
 void Socket::updateTrafficLights()
 {
 	std::copy(receiveBuffer + 4, receiveBuffer + sizeof(receiveBuffer), receiveBuffer); //remove header
@@ -132,6 +149,9 @@ void Socket::updateTrafficLights()
 	}
 }
 
+/// <summary>
+/// closes the socket connection
+/// </summary>
 void Socket::close()
 {
 	isRunning = false;
