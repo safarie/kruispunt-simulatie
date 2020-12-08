@@ -2,9 +2,6 @@
 #include <stb_image.h>
 #include <tiny_obj_loader.h>
 
-/// <summary>
-/// call all functions needed to initialize vulkan
-/// </summary>
 void Renderer::initvulkan()
 {
 	createInstance();
@@ -34,9 +31,6 @@ void Renderer::initvulkan()
     createSyncObjects();
 }
 
-/// <summary>
-/// create vulkan intance
-/// </summary>
 void Renderer::createInstance()
 {
     if (enableValidationLayers && !checkValidationLayerSupport()) {
@@ -78,9 +72,6 @@ void Renderer::createInstance()
     }
 }
 
-/// <summary>
-/// debug messanger
-/// </summary>
 void Renderer::setupDebugMessenger() {
     if (!enableValidationLayers) return;
 
@@ -92,9 +83,6 @@ void Renderer::setupDebugMessenger() {
     }
 }
 
-/// <summary>
-/// create surface to draw on (black screen inside of the window)
-/// </summary>
 void Renderer::createSurface()
 {
     if (glfwCreateWindowSurface(instance, ptr_window->get(), nullptr, &surface) != VK_SUCCESS) {
@@ -102,9 +90,6 @@ void Renderer::createSurface()
     }
 }
 
-/// <summary>
-/// query the system for availeble graphics cards and select one
-/// </summary>
 void Renderer::pickPhysicalDevice()
 {
     uint32_t deviceCount = 0;
@@ -130,9 +115,6 @@ void Renderer::pickPhysicalDevice()
     }
 }
 
-/// <summary>
-/// logical device handles communication with the GPU
-/// </summary>
 void Renderer::createLogicalDevice()
 {
     QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
@@ -180,9 +162,6 @@ void Renderer::createLogicalDevice()
     vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
 }
 
-/// <summary>
-/// queue of images(frames) waiting to be displayed. handels syncing frames with the screen refresch rate.
-/// </summary>
 void Renderer::createSwapChain()
 {
     SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
@@ -238,9 +217,6 @@ void Renderer::createSwapChain()
     swapChainExtent = extent;
 }
 
-/// <summary>
-/// swapchain destructor
-/// </summary>
 void Renderer::cleanupSwapChain() {
     vkDestroyImageView(device, colorImageView, nullptr);
     vkDestroyImage(device, colorImage, nullptr);
@@ -278,9 +254,6 @@ void Renderer::cleanupSwapChain() {
     junctionDescriptor.destroyPool(device);
 }
 
-/// <summary>
-/// rebuild swapchain, is used for resizing the window
-/// </summary>
 void Renderer::recreateSwapChain()
 {
     int width = 0, height = 0;
@@ -306,9 +279,6 @@ void Renderer::recreateSwapChain()
     createCommandBuffers();
 }
 
-/// <summary>
-/// image views are used to acces the images in the swapchain. these discribe how to acces them
-/// </summary>
 void Renderer::createImageViews()
 {
     swapChainImageViews.resize(swapChainImages.size());
@@ -318,9 +288,6 @@ void Renderer::createImageViews()
     }
 }
 
-/// <summary>
-/// specify the framebuffer attachments that are going to be used
-/// </summary>
 void Renderer::createRenderPass()
 {
     VkAttachmentDescription colorAttachment{};
@@ -395,9 +362,6 @@ void Renderer::createRenderPass()
     }
 }
 
-/// <summary>
-/// 
-/// </summary>
 void Renderer::createDescriptorSetLayout()
 {
     VkDescriptorSetLayoutBinding uboLayoutBinding{};
@@ -449,10 +413,6 @@ void Renderer::createDescriptorSetLayout()
     }
 }
 
-
-/// <summary>
-/// takes all the vertex and texture data and aplies the shader calculations to create the pixeldata needed for rendering
-/// </summary>
 void Renderer::createGraphicsPipeline()
 {
     auto vehicleVertShaderCode = readFile("shaders/vehicleVert.spv");
@@ -621,9 +581,6 @@ void Renderer::createGraphicsPipeline()
     vkDestroyShaderModule(device, junctionFragShaderModule, nullptr);
 }
 
-/// <summary>
-/// the commandpool holds all drawing commands
-/// </summary>
 void Renderer::createCommandPool()
 {
     QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
@@ -644,9 +601,6 @@ void Renderer::createColorResources() {
     colorImageView = createImageView(colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
-/// <summary>
-/// create depth information for the images in the swap chain
-/// </summary>
 void Renderer::createDepthResources()
 {
     VkFormat depthFormat = findDepthFormat();
@@ -655,9 +609,6 @@ void Renderer::createDepthResources()
     depthImageView = createImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
-/// <summary>
-/// 
-/// </summary>
 void Renderer::createFramebuffers()
 {
     swapChainFramebuffers.resize(swapChainImageViews.size());
@@ -684,9 +635,6 @@ void Renderer::createFramebuffers()
     }
 }
 
-/// <summary>
-/// 
-/// </summary>
 void Renderer::createTextureImage()
 {
     int texWidth, texHeight, texChannels;
@@ -718,17 +666,11 @@ void Renderer::createTextureImage()
     vkFreeMemory(device, stagingBufferMemory, nullptr);
 }
 
-/// <summary>
-/// 
-/// </summary>
 void Renderer::createTextureImageView()
 {
     textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
-/// <summary>
-/// 
-/// </summary>
 void Renderer::createTextureSampler()
 {
     VkSamplerCreateInfo samplerInfo{};
@@ -751,9 +693,6 @@ void Renderer::createTextureSampler()
     }
 }
 
-/// <summary>
-/// declair all model information and load them in the specefied buffers
-/// </summary>
 void Renderer::loadModels()
 {
     ModelInfo cars_y{};
@@ -833,27 +772,18 @@ void Renderer::loadModels()
     loadModel(&junctionModelInfo, junctionBuffers);
 }
 
-/// <summary>
-/// create vertex buffers
-/// </summary>
 void Renderer::createVertexBuffers()
 {
     createVertexBuffer(vehicleBuffers);
     createVertexBuffer(junctionBuffers);
 }
 
-/// <summary>
-/// create index buffers
-/// </summary>
 void Renderer::createIndexBuffers()
 {
     createIndexBuffer(vehicleBuffers);
     createIndexBuffer(junctionBuffers);
 }
 
-/// <summary>
-/// create the uniform buffers, these contain date the shaders can use
-/// </summary>
 void Renderer::createUniformBuffers()
 {
     prepareDanymicUniformBuffer();
@@ -877,9 +807,6 @@ void Renderer::createUniformBuffers()
     }
 }
 
-/// <summary>
-/// descriptorpool contain per image in de swapchain the discriptors sets
-/// </summary>
 void Renderer::createDescriptorPool()
 {
     VkDescriptorPoolSize uniformBuffer{};
@@ -930,9 +857,6 @@ void Renderer::createDescriptorPool()
     }
 }
 
-/// <summary>
-/// descriptor sets tell the shader how to acces the data in the uniform buffers
-/// </summary>
 void Renderer::createDescriptorSets()
 {
     std::vector<VkDescriptorSetLayout> vehicleLayouts(swapChainImages.size(), vehicleDescriptor.layout);
@@ -1038,9 +962,6 @@ void Renderer::createDescriptorSets()
     }
 }
 
-/// <summary>
-/// command buffer contain the instruction for how to draw the frame.
-/// </summary>
 void Renderer::createCommandBuffers()
 {
     commandBuffers.resize(swapChainFramebuffers.size());
@@ -1122,11 +1043,6 @@ void Renderer::createCommandBuffers()
     }
 }
 
-/// <summary>
-/// creates fences and semaphores.
-/// fences: can be accessed from your program using calls, fences are mainly designed to synchronize your application itself with rendering operations
-/// semaphores: are used to synchronize operations within or across command queues
-/// </summary>
 void Renderer::createSyncObjects()
 {
     imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -1150,9 +1066,6 @@ void Renderer::createSyncObjects()
     }
 }
 
-/// <summary>
-/// everytime this function is called it will draw the next frame
-/// </summary>
 void Renderer::drawFrame() {
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -1223,9 +1136,6 @@ void Renderer::drawFrame() {
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-/// <summary>
-/// after stopping the vulkan app, the used resources need to cleaned up
-/// </summary>
 void Renderer::cleanup()
 {
     if (dubo.model)
@@ -1268,10 +1178,6 @@ void Renderer::cleanup()
 }
 
 
-/// <summary>
-/// setup the debug messanger
-/// </summary>
-/// <param name="createInfo">info of the created vulkan instance</param>
 void Renderer::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
     createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -1280,10 +1186,6 @@ void Renderer::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoE
     createInfo.pfnUserCallback = debugCallback;
 }
 
-/// <summary>
-/// get the list of required extentions of glwf, so these can be used for error checking
-/// </summary>
-/// <returns>list of glfw extensions</returns>
 std::vector<const char*> Renderer::getRequiredExtensions()
 {
     uint32_t glfwExtensionCount = 0;
@@ -1299,10 +1201,6 @@ std::vector<const char*> Renderer::getRequiredExtensions()
     return extensions;
 }
 
-/// <summary>
-/// check if there are any layers that support validation
-/// </summary>
-/// <returns>tue or false</returns>
 bool Renderer::checkValidationLayerSupport()
 {
     uint32_t layerCount;
@@ -1329,14 +1227,6 @@ bool Renderer::checkValidationLayerSupport()
     return true;
 }
 
-/// <summary>
-/// prints the error thrown to the console
-/// </summary>
-/// <param name="messageSeverity">flags</param>
-/// <param name="messageType"></param>
-/// <param name="pCallbackData"></param>
-/// <param name="pUserData">used varibeles</param>
-/// <returns></returns>
 VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
     std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
@@ -1344,14 +1234,6 @@ VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::debugCallback(VkDebugUtilsMessageSeveri
     return VK_FALSE;
 }
 
-/// <summary>
-/// create debug messanger
-/// </summary>
-/// <param name="instance"></param>
-/// <param name="pCreateInfo"></param>
-/// <param name="pAllocator"></param>
-/// <param name="pDebugMessenger"></param>
-/// <returns></returns>
 VkResult Renderer::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
     auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
     if (func != nullptr) {
@@ -1362,12 +1244,6 @@ VkResult Renderer::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDeb
     }
 }
 
-/// <summary>
-/// destroy debug messanger
-/// </summary>
-/// <param name="instance"></param>
-/// <param name="debugMessenger"></param>
-/// <param name="pAllocator"></param>
 void Renderer::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
@@ -1375,11 +1251,6 @@ void Renderer::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMe
     }
 }
 
-/// <summary>
-/// check if the selected GPU is supports vulkan
-/// </summary>
-/// <param name="device">selected GPU</param>
-/// <returns></returns>
 bool Renderer::isDeviceSuitable(VkPhysicalDevice device) {
     QueueFamilyIndices indices = findQueueFamilies(device);
 
@@ -1397,11 +1268,6 @@ bool Renderer::isDeviceSuitable(VkPhysicalDevice device) {
     return indices.isComplete() && extensionsSupported && swapChainAdequate  && supportedFeatures.samplerAnisotropy;
 }
 
-/// <summary>
-/// ckeck if the selected gpu supports all used extensions
-/// </summary>
-/// <param name="device">selected GPU</param>
-/// <returns></returns>
 bool Renderer::checkDeviceExtensionSupport(VkPhysicalDevice device) {
     uint32_t extensionCount;
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
@@ -1418,11 +1284,6 @@ bool Renderer::checkDeviceExtensionSupport(VkPhysicalDevice device) {
     return requiredExtensions.empty();
 }
 
-/// <summary>
-/// query the selected GPU to see which queue types it supports
-/// </summary>
-/// <param name="device">selected GPU</param>
-/// <returns>supported queue families</returns>
 QueueFamilyIndices Renderer::findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
 
@@ -1455,21 +1316,11 @@ QueueFamilyIndices Renderer::findQueueFamilies(VkPhysicalDevice device) {
     return indices;
 }
 
-/// <summary>
-/// get the GPU used
-/// </summary>
-/// <returns>GPU</returns>
 VkDevice Renderer::getDevice()
 {
     return device;
 }
 
-
-/// <summary>
-/// check if the GPU supports swapchain
-/// </summary>
-/// <param name="device">selected GPU</param>
-/// <returns></returns>
 SwapChainSupportDetails Renderer::querySwapChainSupport(VkPhysicalDevice device) {
     SwapChainSupportDetails details;
 
@@ -1494,11 +1345,6 @@ SwapChainSupportDetails Renderer::querySwapChainSupport(VkPhysicalDevice device)
     return details;
 }
 
-/// <summary>
-/// 
-/// </summary>
-/// <param name="availableFormats"></param>
-/// <returns></returns>
 VkSurfaceFormatKHR Renderer::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
     for (const auto& availableFormat : availableFormats) {
         if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -1509,11 +1355,6 @@ VkSurfaceFormatKHR Renderer::chooseSwapSurfaceFormat(const std::vector<VkSurface
     return availableFormats[0];
 }
 
-/// <summary>
-/// check if VK_PRESENT_MODE_MAILBOX_KHR is supoorted
-/// </summary>
-/// <param name="availablePresentModes">list to check</param>
-/// <returns></returns>
 VkPresentModeKHR Renderer::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
     for (const auto& availablePresentMode : availablePresentModes) {
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -1524,11 +1365,6 @@ VkPresentModeKHR Renderer::chooseSwapPresentMode(const std::vector<VkPresentMode
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-/// <summary>
-/// 
-/// </summary>
-/// <param name="capabilities"></param>
-/// <returns></returns>
 VkExtent2D Renderer::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
     if (capabilities.currentExtent.width != UINT32_MAX) {
         return capabilities.currentExtent;
@@ -1549,12 +1385,6 @@ VkExtent2D Renderer::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabiliti
     }
 }
 
-
-/// <summary>
-/// read the .spv files (shaders)
-/// </summary>
-/// <param name="filename">.spv file path</param>
-/// <returns>buffer with the spv data</returns>
 std::vector<char> Renderer::readFile(const std::string& filename)
 {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
@@ -1574,11 +1404,6 @@ std::vector<char> Renderer::readFile(const std::string& filename)
     return buffer;
 }
 
-/// <summary>
-/// create shade module
-/// </summary>
-/// <param name="code">buffer with the .spv data</param>
-/// <returns></returns>
 VkShaderModule Renderer::createShaderModule(const std::vector<char>& code) {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -1593,13 +1418,6 @@ VkShaderModule Renderer::createShaderModule(const std::vector<char>& code) {
     return shaderModule;
 }
 
-
-/// <summary>
-/// check the memmory type on the GPU
-/// </summary>
-/// <param name="typeFilter"></param>
-/// <param name="properties"></param>
-/// <returns>index of the choosen memmory type</returns>
 uint32_t Renderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
     VkPhysicalDeviceMemoryProperties memProperties;
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
@@ -1613,11 +1431,6 @@ uint32_t Renderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pro
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-/// <summary>
-/// load the vertex data(verticies, indecies, normals, texture coords) from de models into the specified buffers
-/// </summary>
-/// <param name="model">model info</param>
-/// <param name="modelBuffer">buffers to push the loaded data into</param>
 void Renderer::loadModel(ModelInfo* model, ModelBuffers& modelBuffer)
 {
     tinyobj::attrib_t attrib;
@@ -1670,10 +1483,6 @@ void Renderer::loadModel(ModelInfo* model, ModelBuffers& modelBuffer)
     modelBuffer.indices.insert(modelBuffer.indices.end(), tempIndices.begin(), tempIndices.end());;
 }
 
-/// <summary>
-/// take the modeldata en copy the verticies to the GPU
-/// </summary>
-/// <param name="modelBuffer">data struct containing model data</param>
 void Renderer::createVertexBuffer(ModelBuffers& modelBuffer)
 {
 
@@ -1696,10 +1505,6 @@ void Renderer::createVertexBuffer(ModelBuffers& modelBuffer)
     vkFreeMemory(device, stagingBufferMemory, nullptr);
 }
 
-/// <summary>
-/// take the modeldata en copy the indicies to the GPU
-/// </summary>
-/// <param name="modelBuffer">data struct containing model data</param>
 void Renderer::createIndexBuffer(ModelBuffers& modelBuffer)
 {
     VkDeviceSize bufferSize = sizeof(modelBuffer.indices[0]) * modelBuffer.indices.size();
@@ -1722,14 +1527,6 @@ void Renderer::createIndexBuffer(ModelBuffers& modelBuffer)
 
 }
 
-/// <summary>
-/// create the buffer
-/// </summary>
-/// <param name="size"></param>
-/// <param name="usage"></param>
-/// <param name="properties"></param>
-/// <param name="buffer">buffer variable for access</param>
-/// <param name="bufferMemory">buffermemmory variable for access</param>
 void Renderer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -1756,12 +1553,6 @@ void Renderer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemor
     vkBindBufferMemory(device, buffer, bufferMemory, 0);
 }
 
-/// <summary>
-/// copy one buffer to another
-/// </summary>
-/// <param name="srcBuffer"></param>
-/// <param name="dstBuffer"></param>
-/// <param name="size"></param>
 void Renderer::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
     VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
@@ -1772,10 +1563,6 @@ void Renderer::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize s
     endSingleTimeCommands(commandBuffer);
 }
 
-
-/// <summary>
-/// check the min alignment size and reserve memmory for the dynamic uniform buffer
-/// </summary>
 void Renderer::prepareDanymicUniformBuffer()
 {
     size_t minUboAlignment = gpuProperties.limits.minUniformBufferOffsetAlignment;
@@ -1790,10 +1577,6 @@ void Renderer::prepareDanymicUniformBuffer()
     assert(dubo.model);
 }
 
-/// <summary>
-/// update the camera position
-/// </summary>
-/// <param name="currentImage">swapchain image(current frame)</param>
 void Renderer::updateUniformBuffer(uint32_t currentImage) 
 {
     UniformBufferObject ubo{};   
@@ -1808,10 +1591,6 @@ void Renderer::updateUniformBuffer(uint32_t currentImage)
     vkUnmapMemory(device, uniformBuffersMemory[currentImage]);
 }
 
-/// <summary>
-/// update all vehicle positions
-/// </summary>
-/// <param name="currentImage">swapchain image(current frame)</param>
 void Renderer::updateDynamicUniformBuffer(uint32_t currentImage)
 {
     for (IModel* model : ptr_simulation->models)
@@ -1826,10 +1605,6 @@ void Renderer::updateDynamicUniformBuffer(uint32_t currentImage)
     vkUnmapMemory(device, dynamicUniformBuffersMemory[currentImage]);
 }
 
-/// <summary>
-/// update all lights
-/// </summary>
-/// <param name="currentImage">swapchain image(current frame)</param>
 void Renderer::updateUboLights(uint32_t currentImage) {
     
     int totalLights = 0;
@@ -1881,19 +1656,6 @@ void Renderer::updateUboLights(uint32_t currentImage) {
     vkUnmapMemory(device, lightBuffersMemory[currentImage]);
 }
 
-
-/// <summary>
-/// create swapchain image
-/// </summary>
-/// <param name="width">window width</param>
-/// <param name="height">window heigth</param>
-/// <param name="numSamples"></param>
-/// <param name="format"></param>
-/// <param name="tiling"></param>
-/// <param name="usage"></param>
-/// <param name="properties"></param>
-/// <param name="image"></param>
-/// <param name="imageMemory"></param>
 void Renderer::createImage(uint32_t width, uint32_t height, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -1929,10 +1691,6 @@ void Renderer::createImage(uint32_t width, uint32_t height, VkSampleCountFlagBit
     vkBindImageMemory(device, image, imageMemory, 0);
 }
 
-/// <summary>
-/// start recording the command buffer
-/// </summary>
-/// <returns>command buffer thats being recorded</returns>
 VkCommandBuffer Renderer::beginSingleTimeCommands() {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1952,10 +1710,6 @@ VkCommandBuffer Renderer::beginSingleTimeCommands() {
     return commandBuffer;
 }
 
-/// <summary>
-/// end the recording of the command buffer
-/// </summary>
-/// <param name="commandBuffer">commandbuffer to stop recording of</param>
 void Renderer::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     vkEndCommandBuffer(commandBuffer);
 
@@ -1970,13 +1724,6 @@ void Renderer::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 }
 
-/// <summary>
-/// make sure that the image has the correct layout
-/// </summary>
-/// <param name="image"></param>
-/// <param name="format">can be used for depth, but is not used here</param>
-/// <param name="oldLayout"></param>
-/// <param name="newLayout"></param>
 void Renderer::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
     VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
@@ -2026,13 +1773,6 @@ void Renderer::transitionImageLayout(VkImage image, VkFormat format, VkImageLayo
     endSingleTimeCommands(commandBuffer);
 }
 
-/// <summary>
-/// record the coppy buffer to image command
-/// </summary>
-/// <param name="buffer"></param>
-/// <param name="image"></param>
-/// <param name="width"></param>
-/// <param name="height"></param>
 void Renderer::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
     VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
@@ -2056,13 +1796,6 @@ void Renderer::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width,
     endSingleTimeCommands(commandBuffer);
 }
 
-/// <summary>
-/// 
-/// </summary>
-/// <param name="image"></param>
-/// <param name="format"></param>
-/// <param name="aspectFlags"></param>
-/// <returns></returns>
 VkImageView Renderer::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags) {
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -2083,11 +1816,6 @@ VkImageView Renderer::createImageView(VkImage image, VkFormat format, VkImageAsp
     return imageView;
 }
 
-
-/// <summary>
-/// return supported depth format
-/// </summary>
-/// <returns>supported format</returns>
 VkFormat Renderer::findDepthFormat() {
     return findSupportedFormat(
         { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
@@ -2096,13 +1824,6 @@ VkFormat Renderer::findDepthFormat() {
     );
 }
 
-/// <summary>
-/// find supported format
-/// </summary>
-/// <param name="candidates">list of formats</param>
-/// <param name="tiling"></param>
-/// <param name="features"></param>
-/// <returns>supported format</returns>
 VkFormat Renderer::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
     for (VkFormat format : candidates) {
         VkFormatProperties props;
@@ -2119,20 +1840,10 @@ VkFormat Renderer::findSupportedFormat(const std::vector<VkFormat>& candidates, 
     throw std::runtime_error("failed to find supported format!");
 }
 
-/// <summary>
-/// check the stecil format
-/// </summary>
-/// <param name="format"></param>
-/// <returns>true or false</returns>
 bool Renderer::hasStencilComponent(VkFormat format) {
     return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-
-/// <summary>
-/// check the highest supported msaa count by the GPU
-/// </summary>
-/// <returns>highest supported msaa</returns>
 VkSampleCountFlagBits Renderer::getMaxUsableSampleCount() {
     vkGetPhysicalDeviceProperties(physicalDevice, &gpuProperties);
 

@@ -1,17 +1,10 @@
 #include "Camera.hpp"
 
-/// <summary>
-/// set the default camera position
-/// </summary>
 void Camera::initCamera()
 {
 	view = defaultView;
 }
 
-/// <summary>
-/// update the camera data
-/// </summary>
-/// <param name="delta">time past since last update</param>
 void Camera::update(float& delta)
 {
 	float speed = delta * 50.0f;
@@ -71,10 +64,6 @@ void Camera::update(float& delta)
 	}
 }
 
-/// <summary>
-/// check if any of the keys(wasd) is pressed
-/// </summary>
-/// <returns></returns>
 bool Camera::keyboardInput()
 {
 	return keys.up || keys.down || keys.left || keys.right;

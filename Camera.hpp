@@ -3,6 +3,9 @@
 #include <math.h>
 #include <glm/gtc/matrix_transform.hpp>
 
+/// <summary>
+/// struct with bools to check if a key is pressed
+/// </summary>
 struct Keys {
 	bool up = false;
 	bool down = false;
@@ -11,6 +14,9 @@ struct Keys {
 	bool space = false;
 };
 
+/// <summary>
+/// struct with mouse info
+/// </summary>
 struct Mouse
 {
 	bool rightClick = false;
@@ -19,6 +25,9 @@ struct Mouse
 	double yPos = 0.0;
 };
 
+/// <summary>
+/// camera class
+/// </summary>
 class Camera
 {
 public:
@@ -30,8 +39,21 @@ public:
 	float dragStartY = 0.0f; 
 	float cameraHeight = 200;
 
+	/// <summary>
+	/// set the default camera position
+	/// </summary>
 	void initCamera();
+	
+	/// <summary>
+	/// update the camera data
+	/// </summary>
+	/// <param name="delta">time past since last update</param>
 	void update(float& delta);
+	
+	/// <summary>
+	/// check if any of the keys(wasd) is pressed
+	/// </summary>
+	/// <returns></returns>
 	bool keyboardInput();
 
 private:

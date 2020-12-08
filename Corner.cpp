@@ -1,12 +1,5 @@
 #include "Corner.hpp"
 
-/// <summary>
-/// constructor
-/// </summary>
-/// <param name="startPos">start position of the corner</param>
-/// <param name="direction">facing of the vehicle in degree</param>
-/// <param name="radius">radius of the corner</param>
-/// <param name="degree">degree of the corner</param>
 Corner::Corner(glm::vec3 startPos, float direction, float radius, float degree)
 {
     this->radius = radius;
@@ -19,13 +12,6 @@ Corner::Corner(glm::vec3 startPos, float direction, float radius, float degree)
     degPerMeter = 360.0f / circumference;
 }
 
-/// <summary>
-/// update the given vehicle
-/// </summary>
-/// <param name="delta">time past since last frame</param>
-/// <param name="model">model(vehicle) to update</param>
-/// <param name="section">current section number</param>
-/// <returns>next section number</returns>
 int Corner::update(float& delta, IModel* model, int section)
 {
 	glm::mat4* modelMat = &model->getPos();
